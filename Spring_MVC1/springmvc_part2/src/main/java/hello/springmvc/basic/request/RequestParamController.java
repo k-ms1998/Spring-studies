@@ -35,4 +35,15 @@ public class RequestParamController {
         return "ok"; // @ResponseBody => returns a string to response body instead of view resolver
     }
 
+    @ResponseBody
+    @RequestMapping("/request-param-v3")
+    public String requestParamV3(@RequestParam String username,
+                                 @RequestParam int age) {
+//  value from @RequestParam(value) if the name of the variable matches the name of the parameter
+
+        log.info("username={}, age={}", username, age);
+
+        return "ok"; // @ResponseBody => returns a string to response body instead of view resolver
+    }
+
 }
