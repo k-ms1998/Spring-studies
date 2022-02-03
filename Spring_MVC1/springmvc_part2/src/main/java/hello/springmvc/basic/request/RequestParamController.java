@@ -46,4 +46,14 @@ public class RequestParamController {
         return "ok"; // @ResponseBody => returns a string to response body instead of view resolver
     }
 
+    @ResponseBody
+    @RequestMapping("/request-param-v4")
+    public String requestParamV4(String username, int age) {
+//  @RequestParam can be ignored if the names match && if the variable is String, int or Integer
+
+        log.info("username={}, age={}", username, age);
+
+        return "ok"; // @ResponseBody => returns a string to response body instead of view resolver
+    }
+
 }
