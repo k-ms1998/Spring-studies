@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.annotation.PostConstruct;
 import java.util.List;
@@ -79,14 +80,22 @@ public class BasicItemController {
      * @return
      */
     @PostMapping("/add")
-    public String addItemV2(@ModelAttribute("item") Item item) {
+    public String addItemV2(@ModelAttribute("item") Item item,
+                            RedirectAttributes redirectAttributes) {
         // @ModelAttribute Item item => O
         // Item item =>  O
 
         itemRepository.save(item);
 
+        redirectAttributes.addAttribute("itemId", item.getId());
+        redirectAttributes.addAttribute("status", true);
+        redirectAttributes.addAttribute("msg", "OK");
+
 //        return "basic/addForm"; => 새로고침시 계속 새로운 데이터 추가
-        return "redirect:/basic/items/"+item.getId(); //해결방안: redirect
+//        return "redirect:/basic/items/"+item.getId(); //해결방안: redirect
+
+        return "redirect:/basic/items/{itemId}";
+        //=>PathVariable 에 itemId가 없어도, RedirectAttributes 로 itemId 설정 가능&&쿼리파라미터 값 자동 추가(status, msg)&&인코딩 해줌
     }
 
     @GetMapping("/add")
