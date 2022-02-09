@@ -70,7 +70,7 @@ public class BasicItemController {
         Item item = new Item(itemName, price, quantity);
         itemRepository.save(item);
 
-        return "basic/addForm";
+        return "redirect:/basic/items/"+item.getId();
     }
 
     /**
@@ -85,7 +85,8 @@ public class BasicItemController {
 
         itemRepository.save(item);
 
-        return "basic/addForm";
+//        return "basic/addForm"; => 새로고침시 계속 새로운 데이터 추가
+        return "redirect:/basic/items/"+item.getId(); //해결방안: redirect
     }
 
     @GetMapping("/add")
