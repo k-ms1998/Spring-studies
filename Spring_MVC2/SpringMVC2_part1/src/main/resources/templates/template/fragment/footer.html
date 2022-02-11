@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<footer th:fragment="copyFooter">
+    푸터 자리 입니다.<br>
+    CopyFooter.
+</footer>
+<footer th:fragment="copyParam(myParam1, myParam2)">
+    <p>파라미터 자리 입니다.</p>
+    <p th:text="${myParam1}"></p>
+    <p th:text="${myParam2}"></p>
+</footer>
+</body>
+</html>
