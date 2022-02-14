@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html th:fragment="layout (title, content)" xmlns:th="http://www.thymeleaf.org">
+<!-- layout(::title, ::section)이 넘어 왔음 => content가 layoutExtend의 section임-->
+<head>
+    <title th:replace="${title}">레이아웃 타이틀</title>
+</head>
+<body>
+<h1>레이아웃 H1</h1>
+<div th:replace="${content}">
+    <p>레이아웃 컨텐츠(layoutFile)</p>
+</div>
+<!-- 해당<div>태그 전체가 layoutExtend의 section으로 replace됨-->
+<footer>
+    레이아웃 푸터(layoutFile)
+</footer>
+</body>
+</html>
