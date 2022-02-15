@@ -5,11 +5,20 @@ import hello.itemservice.domain.item.ItemRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+/**
+ * Validation V1
+ * Validating when adding new data(@POST /validation/v1/items/add)
+ * Checks if all the required data has been passed from the client
+ * Sends the missing parameters back to the client
+ */
 @Controller
 @RequestMapping("/validation/v1/items")
 @RequiredArgsConstructor
@@ -38,7 +47,35 @@ public class ValidationItemControllerV1 {
     }
 
     @PostMapping("/add")
-    public String addItem(@ModelAttribute Item item, RedirectAttributes redirectAttributes) {
+    public String addItem(@ModelAttribute Item item, RedirectAttributes redirectAttributes, Model model) {
+        //검증 오류 결과를 보관
+        Map<String, String> errors = new HashMap<>();
+
+        //검증 로직
+        if (!StringUtils.hasText(item.getItemName())) {
+            errors.put("itemName", "상품 이름은 필수입니다.");
+        }
+        if (item.getPrice() == null || item.getPrice() < 1000 || item.getPrice() > 10000000) {
+            errors.put("price", "가격은 1000원이상 100만원 이하만 허용됩니다.");
+        }
+        if(item.getQuantity() == null || item.getQuantity() > 10000){
+            errors.put("quantity", "수량은 10000개 이하만 허용됩니다.");
+        }
+
+        //특정 필드가 아닌 복합 룰 검증
+        if (item.getPrice() != null && item.getQuantity() != null) {
+            if (item.getPrice()*item.getQuantity() < 10000) {
+                errors.put("rule1", "가격*수량은 10000이상만 허용됩니다. 현재 값="+(item.getPrice()*item.getQuantity()));
+            }
+        }
+
+        //검증에 실패하면 다시 입력 폼으로
+        if (!errors.isEmpty()) {
+            model.addAttribute("errors", errors);
+            model.addAttribute("item", item); //생략 가능; 인자로 @ModelAttribute Item item을 받기 때문에 자동으로 model.addAttribute를 해주기 때문
+            return "validation/v1/addForm";
+        }
+
         Item savedItem = itemRepository.save(item);
         redirectAttributes.addAttribute("itemId", savedItem.getId());
         redirectAttributes.addAttribute("status", true);
