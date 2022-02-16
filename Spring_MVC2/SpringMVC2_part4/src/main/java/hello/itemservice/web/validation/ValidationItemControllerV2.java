@@ -10,6 +10,8 @@ import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.validation.ObjectError;
 import org.springframework.validation.ValidationUtils;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -28,6 +30,12 @@ public class ValidationItemControllerV2 {
 
     private final ItemRepository itemRepository;
     private final ItemValidator itemValidator;
+
+    @InitBinder //현 컨트롤러가 호출될때마다 실행
+    public void init(WebDataBinder dataBinder) {
+        dataBinder.addValidators(itemValidator);
+        //WebDataBinder에 검증기 itemValidator을 추가
+    }
 
     @GetMapping
     public String items(Model model) {
@@ -208,7 +216,7 @@ public class ValidationItemControllerV2 {
         return "redirect:/validation/v2/items/{itemId}";
     }
 
-    @PostMapping("/add")
+//    @PostMapping("/add")
     public String addItemV4(@ModelAttribute Item item, BindingResult bindingResult,
                             RedirectAttributes redirectAttributes, Model model) {
         //BindingResult bindingResult는 꼭 @ModelAttribute Item item 직후에 와야된다
@@ -216,6 +224,29 @@ public class ValidationItemControllerV2 {
             itemValidator.validate(item, bindingResult);
         }
 
+        //검증에 실패하면 다시 입력 폼으로
+        if (bindingResult.hasErrors()) {
+            //BindingResult는 자동으로 뷰에 넘어감 => model.addAttribute 필요 X
+            model.addAttribute("item", item); //생략 가능; 인자로 @ModelAttribute Item item을 받기 때문에 자동으로 model.addAttribute를 해주기 때문
+            return "validation/v2/addForm";
+        }
+
+        Item savedItem = itemRepository.save(item);
+        redirectAttributes.addAttribute("itemId", savedItem.getId());
+        redirectAttributes.addAttribute("status", true);
+        return "redirect:/validation/v2/items/{itemId}";
+    }
+
+    @PostMapping("/add")
+    public String addItemV5(@Validated @ModelAttribute Item item, BindingResult bindingResult,
+                            RedirectAttributes redirectAttributes, Model model) {
+        /**
+         * @Validated 는 검증기를 실행하라는 애노테이션이다.
+         * 이 애노테이션이 붙으면 앞서 WebDataBinder 에 등록한 검증기를 찾아서 실행한다.
+         * supports(Item.class) 호출되고, 
+         * 결과가 true 일때 ItemValidator 의 validate(Object target, Errors errors) 가 호출된다.
+         * target에는 item, errors에는 bindingResult 가 자동으로 인자로 넘어감
+         */
         //검증에 실패하면 다시 입력 폼으로
         if (bindingResult.hasErrors()) {
             //BindingResult는 자동으로 뷰에 넘어감 => model.addAttribute 필요 X
