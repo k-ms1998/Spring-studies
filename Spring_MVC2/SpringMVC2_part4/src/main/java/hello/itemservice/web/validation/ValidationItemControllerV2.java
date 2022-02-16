@@ -162,6 +162,10 @@ public class ValidationItemControllerV2 {
          * errorCode:오류 코드(이 오류 코드는 메시지에 등록된 코드가 아니다. 뒤에서 설명할 messageResolver 를 위한 오류 코드이다.)
          * errorArgs: 오류 코드에 보낼 인자 값(FieldError()에서 arguments 와 동일)
          * defaultMessage
+         *
+         *  resolveMessageCodes(errorCode, objectName, field, field Type) 호출
+         *  => objectName == item
+         *
          */
         if (!StringUtils.hasText(item.getItemName())) {
             //itemName이 입력이 안됐을때
@@ -174,6 +178,11 @@ public class ValidationItemControllerV2 {
             bindingResult.rejectValue("quantity", "max", new Object[]{10000}, "수량을 확인해 주세요.");
         }
 
+        /**
+         * reject(errorCode, errorArgs, defaultMessage)
+         * resolveMessageCodes(errorCode, objectName) 호출
+         * => objectName == item
+         */
         //특정 필드가 아닌 복합 룰 검증
         if (item.getPrice() != null && item.getQuantity() != null) {
             if (item.getPrice()*item.getQuantity() < 10000) {
