@@ -101,7 +101,7 @@ public class ValidationItemControllerV2 {
         return "redirect:/validation/v2/items/{itemId}";
     }
 
-    @PostMapping("/add")
+//    @PostMapping("/add")
     public String addItemV2(@ModelAttribute Item item, BindingResult bindingResult,
                             RedirectAttributes redirectAttributes, Model model) {
         //BindingResult bindingResult는 꼭 @ModelAttribute Item item 직후에 와야된다
@@ -151,6 +151,50 @@ public class ValidationItemControllerV2 {
         return "redirect:/validation/v2/items/{itemId}";
     }
 
+    @PostMapping("/add")
+    public String addItemV3(@ModelAttribute Item item, BindingResult bindingResult,
+                            RedirectAttributes redirectAttributes, Model model) {
+        //BindingResult bindingResult는 꼭 @ModelAttribute Item item 직후에 와야된다
+
+        //검증 로직
+        /** rejectValue(field, errorCode, errorArgs, defaultMessage)
+         * field: 오류 필드명
+         * errorCode:오류 코드(이 오류 코드는 메시지에 등록된 코드가 아니다. 뒤에서 설명할 messageResolver 를 위한 오류 코드이다.)
+         * errorArgs: 오류 코드에 보낼 인자 값(FieldError()에서 arguments 와 동일)
+         * defaultMessage
+         */
+        if (!StringUtils.hasText(item.getItemName())) {
+            //itemName이 입력이 안됐을때
+            bindingResult.rejectValue("itemName", "required");
+        }
+        if (item.getPrice() == null || item.getPrice() < 1000 || item.getPrice() > 10000000) {
+            bindingResult.rejectValue("price", "range", new Object[]{1000, 1000000}, "가격을 확인해 주세요.");
+        }
+        if(item.getQuantity() == null || item.getQuantity() > 10000){
+            bindingResult.rejectValue("quantity", "max", new Object[]{10000}, "수량을 확인해 주세요.");
+        }
+
+        //특정 필드가 아닌 복합 룰 검증
+        if (item.getPrice() != null && item.getQuantity() != null) {
+            if (item.getPrice()*item.getQuantity() < 10000) {
+                //(objectName, code, arguments, defaultMessage)
+                bindingResult.reject("totalPriceMin",new Object[]{10000, item.getPrice()* item.getQuantity()}, "가격*수량 값을 확인해 주세요.");
+                bindingResult.reject(null, null, "Test Global Error."); //Adding a test global error
+            }
+        }
+
+        //검증에 실패하면 다시 입력 폼으로
+        if (bindingResult.hasErrors()) {
+            //BindingResult는 자동으로 뷰에 넘어감 => model.addAttribute 필요 X
+            model.addAttribute("item", item); //생략 가능; 인자로 @ModelAttribute Item item을 받기 때문에 자동으로 model.addAttribute를 해주기 때문
+            return "validation/v2/addForm";
+        }
+
+        Item savedItem = itemRepository.save(item);
+        redirectAttributes.addAttribute("itemId", savedItem.getId());
+        redirectAttributes.addAttribute("status", true);
+        return "redirect:/validation/v2/items/{itemId}";
+    }
 
 }
 
