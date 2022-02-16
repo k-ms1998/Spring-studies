@@ -27,6 +27,7 @@ import java.util.Map;
 public class ValidationItemControllerV2 {
 
     private final ItemRepository itemRepository;
+    private final ItemValidator itemValidator;
 
     @GetMapping
     public String items(Model model) {
@@ -153,7 +154,7 @@ public class ValidationItemControllerV2 {
         return "redirect:/validation/v2/items/{itemId}";
     }
 
-    @PostMapping("/add")
+//    @PostMapping("/add")
     public String addItemV3(@ModelAttribute Item item, BindingResult bindingResult,
                             RedirectAttributes redirectAttributes, Model model) {
         //BindingResult bindingResult는 꼭 @ModelAttribute Item item 직후에 와야된다
@@ -192,6 +193,27 @@ public class ValidationItemControllerV2 {
                 bindingResult.reject("totalPriceMin",new Object[]{10000, item.getPrice()* item.getQuantity()}, "가격*수량 값을 확인해 주세요.");
                 bindingResult.reject(null, null, "Test Global Error."); //Adding a test global error
             }
+        }
+
+        //검증에 실패하면 다시 입력 폼으로
+        if (bindingResult.hasErrors()) {
+            //BindingResult는 자동으로 뷰에 넘어감 => model.addAttribute 필요 X
+            model.addAttribute("item", item); //생략 가능; 인자로 @ModelAttribute Item item을 받기 때문에 자동으로 model.addAttribute를 해주기 때문
+            return "validation/v2/addForm";
+        }
+
+        Item savedItem = itemRepository.save(item);
+        redirectAttributes.addAttribute("itemId", savedItem.getId());
+        redirectAttributes.addAttribute("status", true);
+        return "redirect:/validation/v2/items/{itemId}";
+    }
+
+    @PostMapping("/add")
+    public String addItemV4(@ModelAttribute Item item, BindingResult bindingResult,
+                            RedirectAttributes redirectAttributes, Model model) {
+        //BindingResult bindingResult는 꼭 @ModelAttribute Item item 직후에 와야된다
+        if(itemValidator.supports(item.getClass())){
+            itemValidator.validate(item, bindingResult);
         }
 
         //검증에 실패하면 다시 입력 폼으로
