@@ -13,6 +13,7 @@ public class Item {
     private Long id;
 
     @NotBlank(message="공백 X")   //해당 오류가 발생했을때 message="" 으로 오류 메세지 직접 설정 가능
+    @NotNull
     private String itemName;
 
     @NotNull(message="가격은 필수")
