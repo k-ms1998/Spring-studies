@@ -61,15 +61,16 @@ public class ValidationItemControllerV3 {
     }
 
     @PostMapping("/add")
-    public String addItemV5(@Validated @ModelAttribute Item item, BindingResult bindingResult,
+    public String addItem(@Validated @ModelAttribute Item item, BindingResult bindingResult,
                             RedirectAttributes redirectAttributes, Model model) {
-        /**
-         * @Validated 는 검증기를 실행하라는 애노테이션이다.
-         * 이 애노테이션이 붙으면 앞서 WebDataBinder 에 등록한 검증기를 찾아서 실행한다.
-         * supports(Item.class) 호출되고, 
-         * 결과가 true 일때 ItemValidator 의 validate(Object target, Errors errors) 가 호출된다.
-         * target에는 item, errors에는 bindingResult 가 자동으로 인자로 넘어감
-         */
+        if (item.getPrice() != null && item.getQuantity() != null) {
+            int resultPrice = item.getPrice() * item.getQuantity();
+            if (resultPrice < 10000) {
+                bindingResult.reject("totalPriceMin", new Object[]{10000,
+                        resultPrice}, null);
+            }
+        }//@ScriptAssert 보다는 reject()를 사용해서 클로벌 에러를 추가하는게 권장됨
+
         //검증에 실패하면 다시 입력 폼으로
         if (bindingResult.hasErrors()) {
             //BindingResult는 자동으로 뷰에 넘어감 => model.addAttribute 필요 X
