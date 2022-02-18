@@ -2,6 +2,8 @@ package hello.itemservice.web.validation;
 
 import hello.itemservice.domain.item.Item;
 import hello.itemservice.domain.item.ItemRepository;
+import hello.itemservice.domain.item.SaveCheck;
+import hello.itemservice.domain.item.UpdateCheck;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -55,8 +57,10 @@ public class ValidationItemControllerV3 {
     }
 
     @PostMapping("/{itemId}/edit")
-    public String edit(@PathVariable Long itemId, @Validated @ModelAttribute Item item, BindingResult bindingResult) {
+    public String edit(@PathVariable Long itemId, @Validated(UpdateCheck.class) @ModelAttribute Item item, BindingResult bindingResult) {
+        // UpdateCheck.class 가 적용된 파라미터들만 validate
         checkTotalPriceMinError(item, bindingResult);
+        //bindingResult.getAllErrors().forEach(e -> System.out.println("e = " + e));
         if (bindingResult.hasErrors()) {
             return "validation/v3/editForm";
         }
@@ -66,8 +70,9 @@ public class ValidationItemControllerV3 {
     }
 
     @PostMapping("/add")
-    public String addItem(@Validated @ModelAttribute Item item, BindingResult bindingResult,
-                            RedirectAttributes redirectAttributes, Model model) {
+    public String addItem(@Validated(SaveCheck.class) @ModelAttribute Item item, BindingResult bindingResult,
+                          RedirectAttributes redirectAttributes, Model model) {
+        // SaveCheck.class 가 적용된 파라미터들만 validate
         checkTotalPriceMinError(item, bindingResult);
 
         //검증에 실패하면 다시 입력 폼으로

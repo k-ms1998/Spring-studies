@@ -28,6 +28,12 @@
         </div>
 
         <div>
+            <label for="id" th:text="#{label.item.id}">상품 ID</label>
+            <input type="text" id="id" th:field="*{id}" class="form-control"
+                   readonly>
+        </div>
+
+        <div>
             <label for="itemName" th:text="#{label.item.itemName}">상품명</label>
             <input type="text" id="itemName" th:field="*{itemName}"
                    th:errorclass="field-error"
