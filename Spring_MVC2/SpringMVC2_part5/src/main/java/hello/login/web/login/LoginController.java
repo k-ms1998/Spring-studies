@@ -73,6 +73,8 @@ public class LoginController {
         //세션에 로그인 회원 정보 보관
         session.setAttribute(SessionConst.LOGIN_MEMBER, loginMember);
 
+        session.setMaxInactiveInterval(60); // LastAccessedTime 이후로 60초가 지나면 세션 종료; Default=1800초
+
         return "redirect:/";
     }
 
