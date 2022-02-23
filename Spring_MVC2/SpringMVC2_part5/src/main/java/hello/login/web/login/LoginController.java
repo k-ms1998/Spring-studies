@@ -9,10 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.*;
 
@@ -52,7 +49,7 @@ public class LoginController {
         return "redirect:/";
     }
 
-    @PostMapping("/login")
+//    @PostMapping("/login")
     public String loginHttpSession(@Validated @ModelAttribute LoginForm loginForm, BindingResult bindingResult
             , HttpServletRequest req, HttpServletResponse res) {
         if (bindingResult.hasErrors()) {
@@ -78,8 +75,40 @@ public class LoginController {
         return "redirect:/";
     }
 
+    @PostMapping("/login")
+    public String loginFilter(@Validated @ModelAttribute LoginForm loginForm, BindingResult bindingResult
+            ,@RequestParam(defaultValue = "/") String redirectUri
+            , HttpServletRequest req, HttpServletResponse res) {
+        //다른 페이지(ex: /items)에 로그인 전에 접속을 시도해서,
+        //로그인을 요구했기 때문에 LoginCheckFilter에서 login으로 redirect된 경우
+
+
+        if (bindingResult.hasErrors()) {
+            return "login/loginForm";
+        }
+
+        Member loginMember = loginService.login(loginForm.getLoginId(), loginForm.getPassword());
+        if (loginMember == null) {
+            bindingResult.reject("loginFail", "아이디 또는 비밀번호룰 확인해주세요.");
+
+            return "login/loginForm";
+        }
+
+        //로그인 성공
+
+        //세션이 있으면 세션 반환, 없으면 새로 생성 후 반환
+        HttpSession session = req.getSession();
+        //세션에 로그인 회원 정보 보관
+        session.setAttribute(SessionConst.LOGIN_MEMBER, loginMember);
+
+        session.setMaxInactiveInterval(60); // LastAccessedTime 이후로 60초가 지나면 세션 종료; Default=1800초
+
+        return "redirect:"+redirectUri;
+    }
+
     //    @PostMapping("/logout")
     public String logout(HttpServletRequest req, HttpServletResponse res) {
+
 //        expireCookie(res, "memberId");
         sessionManager.expire(req);
 
