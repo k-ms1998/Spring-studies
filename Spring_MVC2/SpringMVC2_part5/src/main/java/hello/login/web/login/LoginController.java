@@ -77,7 +77,7 @@ public class LoginController {
 
     @PostMapping("/login")
     public String loginFilter(@Validated @ModelAttribute LoginForm loginForm, BindingResult bindingResult
-            ,@RequestParam(defaultValue = "/") String redirectUri
+            ,@RequestParam(defaultValue = "/") String redirectURL
             , HttpServletRequest req, HttpServletResponse res) {
         //다른 페이지(ex: /items)에 로그인 전에 접속을 시도해서,
         //로그인을 요구했기 때문에 LoginCheckFilter에서 login으로 redirect된 경우
@@ -103,7 +103,7 @@ public class LoginController {
 
         session.setMaxInactiveInterval(60); // LastAccessedTime 이후로 60초가 지나면 세션 종료; Default=1800초
 
-        return "redirect:"+redirectUri;
+        return "redirect:"+redirectURL;
     }
 
     //    @PostMapping("/logout")
