@@ -1,0 +1,41 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+</head>
+<body>
+<div class="container" style="max-width: 600px">
+    <div class="py-5 text-center">
+        <h2>500 오류 화면 스프링 부트 제공</h2>
+    </div>
+    <div>
+        <p>오류 화면 입니다.</p>
+    </div>
+    <ul>
+        <li>오류 정보</li>
+        <ul>
+            <!-- BasicErrorController에서 model에 담아서 view로 전달하는 정보들
+                * timestamp: Fri Feb 05 00:00:00 KST 2021
+                * status: 400
+                * error: Bad Request
+                * exception: org.springframework.validation.BindException
+                * trace: 예외 trace
+                * message: Validation failed for object='data'. Error count: 1
+                * errors: Errors(BindingResult)
+                * path: 클라이언트 요청 경로 (`/hello`)
+            -->
+            <li th:text="|timestamp: ${timestamp}|"></li>
+            <li th:text="|path: ${path}|"></li>
+            <li th:text="|status: ${status}|"></li>
+            <li th:text="|message: ${message}|"></li>
+            <li th:text="|error: ${error}|"></li>
+            <li th:text="|exception: ${exception}|"></li>
+            <li th:text="|errors: ${errors}|"></li>
+            <li th:text="|trace: ${trace}|"></li>
+        </ul>
+        </li>
+    </ul>
+    <hr class="my-4">
+</div> <!-- /container -->
+</body>
+</html>
