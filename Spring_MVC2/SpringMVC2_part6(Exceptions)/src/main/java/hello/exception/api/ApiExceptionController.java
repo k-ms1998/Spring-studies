@@ -24,6 +24,19 @@ public class ApiExceptionController {
              */
             throw new RuntimeException("잘못된 사용자 ApiExceptionController");
         }
+
+        if (id.equals("bad")) {
+            /**
+             * {
+             *     "timestamp": "2022-02-28T03:19:49.421+00:00",
+             *     "status": 400,
+             *     "error": "Bad Request",
+             *     "path": "/api/members/bad"
+             * }
+             */
+            throw new IllegalArgumentException("잘못된 입력 값");
+        }
+
         /**
          * @returns
          * {
