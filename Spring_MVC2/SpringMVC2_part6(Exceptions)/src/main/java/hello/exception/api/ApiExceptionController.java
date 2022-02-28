@@ -1,5 +1,6 @@
 package hello.exception.api;
 
+import hello.exception.myException.BadRequestException;
 import hello.exception.myException.UserException;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -48,9 +49,25 @@ public class ApiExceptionController {
         return new MemberDto(id, "hello" + id);
     }
 
+    @GetMapping("/api/response-status-ex1")
+    public String responseStatusEx1() {
+        /**
+         * {
+         *     "timestamp": "2022-02-28T08:57:34.049+00:00",
+         *     "status": 400,
+         *     "error": "Bad Request",
+         *     "exception": "hello.exception.myException.BadRequestException",
+         *     "message": "잘못된 요청 오류입니다. 메시지 사용",
+         *     "path": "/api/response-status-ex1"
+         * }
+         */
+        throw new BadRequestException();
+    }
+
 
     @Data
     @AllArgsConstructor
+
     static class MemberDto {
         private String memberId;
         private String name;
