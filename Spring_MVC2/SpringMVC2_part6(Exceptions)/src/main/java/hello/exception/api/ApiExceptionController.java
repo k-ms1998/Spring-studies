@@ -1,5 +1,6 @@
 package hello.exception.api;
 
+import hello.exception.myException.UserException;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -23,9 +24,7 @@ public class ApiExceptionController {
              * }
              */
             throw new RuntimeException("잘못된 사용자 ApiExceptionController");
-        }
-
-        if (id.equals("bad")) {
+        } else if (id.equals("bad")) {
             /**
              * {
              *     "timestamp": "2022-02-28T03:19:49.421+00:00",
@@ -35,6 +34,8 @@ public class ApiExceptionController {
              * }
              */
             throw new IllegalArgumentException("잘못된 입력 값");
+        } else if (id.equals("user-ex")) {
+            throw new UserException("사용자 오류");
         }
 
         /**
