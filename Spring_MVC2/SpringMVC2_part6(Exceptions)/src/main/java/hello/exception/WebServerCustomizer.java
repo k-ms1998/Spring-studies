@@ -6,7 +6,7 @@ import org.springframework.boot.web.server.WebServerFactoryCustomizer;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
-@Component
+//@Component
 // 스프링 부트에서 기본으로 BasicErrorController를 등록해주기 때문에, BasicErrorController를 사용하면 됨 => WebServerCustomizer 필요 X
 // BasicErrorController는 기본으로 등록되어 있기 때문에 별도로 Controller를 생성할 필요 X
 public class WebServerCustomizer

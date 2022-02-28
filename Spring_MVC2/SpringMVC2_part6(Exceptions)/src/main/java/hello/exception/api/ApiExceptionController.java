@@ -24,8 +24,6 @@ public class ApiExceptionController {
              */
             throw new RuntimeException("잘못된 사용자 ApiExceptionController");
         }
-
-        return new MemberDto(id, "hello" + id);
         /**
          * @returns
          * {
@@ -33,6 +31,7 @@ public class ApiExceptionController {
          *     "name": "hello"+id
          * }
          */
+        return new MemberDto(id, "hello" + id);
     }
 
 

@@ -30,6 +30,9 @@ public class ErrorPageController {
         return "/error-page/404";
     }
 
+    // Request시 Header에서 Accept필드의 값이 text/html이면, 자동으로 일치하는 request 찾음;
+    // 현재는 해당 컨트롤러가 호출되도록 개발되어 있음
+    // => error-page/500.html이 렌더링 됨
     @RequestMapping("/500")
     public String errorPage500(HttpServletRequest request, HttpServletResponse response) {
         log.info("errorPage 500");
