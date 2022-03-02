@@ -5,9 +5,11 @@ import hello.exception.myException.UserException;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 @Slf4j
 @RestController
@@ -62,6 +64,22 @@ public class ApiExceptionController {
          * }
          */
         throw new BadRequestException();
+    }
+
+    @GetMapping("/api/response-status-ex2")
+    public String responseStatusEx2() {
+        /**
+         * {
+         *     "timestamp": "2022-03-02T02:06:55.166+00:00",
+         *     "status": 404,
+         *     "error": "Not Found",
+         *     "exception": "org.springframework.web.server.ResponseStatusException",
+         *     "message": "잘못된 요청 오류입니다. 메시지 사용",
+         *     "path": "/api/response-status-ex2"
+         * }
+         */
+//        ResponseStatusException(HttpStatus status, @Nullable String reason, @Nullable Throwable cause)
+        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "error.badRequest", new IllegalArgumentException());
     }
 
 
