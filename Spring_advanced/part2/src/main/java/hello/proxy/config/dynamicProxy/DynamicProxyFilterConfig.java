@@ -8,6 +8,11 @@ import org.springframework.context.annotation.Configuration;
 
 import java.lang.reflect.Proxy;
 
+/**
+ * JDK 동적 프록시는 인터페이스가 필수이다.
+ * 그렇다면 V2 애플리케이션 처럼 인터페이스 없이 클래스만 있는 경우에는 어떻게 동적 프록시를 적용할 수 있을까?
+ * 이것은 일반적인 방법으로는 어렵고 CGLIB 라는 바이트코드를 조작하는 특별한 라이브러리를 사용해야 한다.
+ */
 @Configuration
 public class DynamicProxyFilterConfig {
     /**
