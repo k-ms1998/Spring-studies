@@ -11,6 +11,7 @@ import org.springframework.aop.MethodMatcher;
 import org.springframework.aop.Pointcut;
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.aop.support.DefaultPointcutAdvisor;
+import org.springframework.aop.support.NameMatchMethodPointcut;
 
 import java.lang.reflect.Method;
 
@@ -53,6 +54,37 @@ public class AdvisorTest {
 
         //DefaultPointCutAdvisor(Pointcut pointcut, Advice advice)
         DefaultPointcutAdvisor advisor = new DefaultPointcutAdvisor(new MyPointCut(), new TimeAdvice());
+
+        proxyFactory.addAdvisor(advisor);
+
+        ServiceInterface proxy = (ServiceInterface) proxyFactory.getProxy();
+
+        /**
+         * 실행 결과를 보면 기대한 것과 같이 save() 를 호출할 때는 어드바이스가 적용되지만,
+         * find() 를 호출할 때는 어드바이스가 적용되지 않는다
+         * => save()일때는 부가 기능(TimeAdvice) 적용 O
+         * => find()일때는 부가 기능(TimeAdvice) 적용 X
+         */
+        proxy.find();
+        proxy.save();
+
+    }
+
+    @Test
+    @DisplayName("스프링이 제공하는 포인트컷")
+    void advisorTest3() {
+        ServiceInterface target = new ServiceImpl();
+        ProxyFactory proxyFactory = new ProxyFactory(target);
+
+        /**
+         * NameMatchMethodPointcut : 메서드 이름을 기반으로 매칭한다. 내부에서는 PatternMatchUtils 를사용한다.
+         * => *save*, *save, save* 등 허용
+         */
+        NameMatchMethodPointcut pointcut = new NameMatchMethodPointcut();
+        pointcut.setMappedNames("save*"); //메서드의 이름이 'save'인 경우에만 proxy 호출
+
+        //DefaultPointCutAdvisor(Pointcut pointcut, Advice advice)
+        DefaultPointcutAdvisor advisor = new DefaultPointcutAdvisor(pointcut, new TimeAdvice());
 
         proxyFactory.addAdvisor(advisor);
 
