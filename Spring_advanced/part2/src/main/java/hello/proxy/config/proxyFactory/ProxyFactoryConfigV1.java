@@ -29,7 +29,7 @@ public class ProxyFactoryConfigV1 {
 
     @Bean
     public OrderServiceV1 orderService(LogTrace logTrace) {
-        OrderServiceV1Impl service = new OrderServiceV1Impl(orderRepository(logTrace));
+        OrderServiceV1 service = new OrderServiceV1Impl(orderRepository(logTrace));
         ProxyFactory proxyFactory = new ProxyFactory(service);
         proxyFactory.addAdvisor(getAdvisor(logTrace));
         OrderServiceV1 proxy = (OrderServiceV1) proxyFactory.getProxy();
