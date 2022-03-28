@@ -24,13 +24,12 @@ public class AspectV3 {
     public void allService() {
     }
 
-    @Around("allOrder()") // OrderRepository && OrderService 모두 적용
+    @Around("allOrder()")
     public Object doLog(ProceedingJoinPoint joinPoint) throws Throwable {
         log.info("[log] {}", joinPoint.getSignature()); //join point 시그니처
         return joinPoint.proceed();
     }
 
-    //hello.aop.order 패키지와 하위 패키지 이면서 클래스 이름 패턴이 *Service => 그러므로, OrderSerivce 에만 적용됨
     @Around("allOrder() && allService()")
     public Object doTransaction(ProceedingJoinPoint joinPoint) throws Throwable{
 
