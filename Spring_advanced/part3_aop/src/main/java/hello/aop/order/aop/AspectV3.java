@@ -1,0 +1,50 @@
+package hello.aop.order.aop;
+
+import lombok.extern.slf4j.Slf4j;
+import org.aspectj.lang.ProceedingJoinPoint;
+import org.aspectj.lang.annotation.Around;
+import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.annotation.Pointcut;
+
+@Slf4j
+@Aspect
+public class AspectV3 {
+    /**
+     * allOrder() 포인트컷은 hello.aop.order 패키지와 하위 패키지를 대상으로 한다.
+     * allService() 포인트컷은 타입 이름 패턴이 *Service 를 대상으로 한다.
+     * 쉽게 이야기해서 XxxService 처럼 Service 로 끝나는 것을 대상으로 한다.
+     * *Servi* 과 같은 패턴도 가능하다.
+     */
+
+    @Pointcut("execution(* hello.aop.order..*(..))")
+    private void allOrder() {
+    }//Pointcut Signature
+
+    @Pointcut("execution(* *..*Service.*(..))")
+    public void allService() {
+    }
+
+    @Around("allOrder()") // OrderRepository && OrderService 모두 적용
+    public Object doLog(ProceedingJoinPoint joinPoint) throws Throwable {
+        log.info("[log] {}", joinPoint.getSignature()); //join point 시그니처
+        return joinPoint.proceed();
+    }
+
+    //hello.aop.order 패키지와 하위 패키지 이면서 클래스 이름 패턴이 *Service => 그러므로, OrderSerivce 에만 적용됨
+    @Around("allOrder() && allService()")
+    public Object doTransaction(ProceedingJoinPoint joinPoint) throws Throwable{
+
+        try {
+            log.info("[트랜잭션 시작] {}", joinPoint.getSignature());
+            Object result = joinPoint.proceed();
+            log.info("[트랜잭션 커밋] {}", joinPoint.getSignature());
+            return result;
+        } catch (Exception e) {
+            log.info("[트랜잭션 롤백] {}", joinPoint.getSignature());
+            throw e;
+        }finally {
+            log.info("[리소스 릴리즈] {}", joinPoint.getSignature());
+        }
+    }
+
+}
