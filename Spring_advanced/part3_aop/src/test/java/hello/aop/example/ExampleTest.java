@@ -1,5 +1,6 @@
 package hello.aop.example;
 
+import hello.aop.example.aspect.RetryAspect;
 import hello.aop.example.aspect.TraceAspect;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
@@ -9,7 +10,7 @@ import org.springframework.context.annotation.Import;
 
 @Slf4j
 @SpringBootTest
-@Import(TraceAspect.class) //TraceAspect를 스프링 빈 등록
+@Import({TraceAspect.class, RetryAspect.class}) //TraceAspect, RetryAspect 를 스프링 빈 등록
 public class ExampleTest {
 
     @Autowired
