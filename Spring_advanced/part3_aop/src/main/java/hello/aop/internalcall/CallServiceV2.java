@@ -6,9 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
-/**
- * 내부 호출을 해결하는 가장 간단한 방법은 자기 자신을 의존관계 주입 받는 것이다
- */
 @Slf4j
 @Component
 public class CallServiceV2 {
