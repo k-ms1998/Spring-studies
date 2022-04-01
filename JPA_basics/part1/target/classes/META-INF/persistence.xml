@@ -15,7 +15,7 @@
             <property name="hibernate.show_sql" value="true"/>
             <property name="hibernate.format_sql" value="true"/>
             <property name="hibernate.use_sql_comments" value="true"/>
-            <property name="hibernate.hbm2ddl.auto" value="create" />
+            <property name="hibernate.hbm2ddl.auto" value="create" /> <!-- value="create" 사용시 Drop Table이후 자동으로 Create Table 실행 => 실무 상황에서는 무조건 사용 X -->
         </properties>
     </persistence-unit>
 </persistence>

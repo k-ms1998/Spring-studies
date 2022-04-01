@@ -21,11 +21,11 @@ public class JpaMain {
         //Create
         Member memberA = new Member();
         memberA.setId(1L);
-        memberA.setName("hello"); // Member 테이블에 저장할 튜플 생성
+        memberA.setUsername("hello"); // Member 테이블에 저장할 튜플 생성
 
         Member memberB = new Member();
         memberB.setId(2L);
-        memberB.setName("helloB"); // Member 테이블에 저장할 튜플 생성
+        memberB.setUsername("helloB"); // Member 테이블에 저장할 튜플 생성
 
         try {
             transaction.begin(); // 데이터베이스 transaction 을 시작; 이전에 transaction.commit()을 했으면 다시 begin()을 해줘야 함
@@ -66,7 +66,7 @@ public class JpaMain {
              * Column id로 원하는 튜플을 찾아서 객체로 반환 받고, 해당 객체의 값을 수정
              */
             Member findMember = em.find(Member.class, 1L);
-            findMember.setName("helloJPA"); // persist()을 하지 않아도 자동으로 테이블이 업데이트 됨
+            findMember.setUsername("helloJPA"); // persist()을 하지 않아도 자동으로 테이블이 업데이트 됨
 
             transaction.commit(); //commit을 통해 변화 반영
         } catch (Exception e) {
@@ -82,7 +82,7 @@ public class JpaMain {
             List<Member> memberList = em.createQuery("select m from Member as m", Member.class)
                     .getResultList();
             for (Member mem : memberList) {
-                System.out.println("member.name = " + mem.getName());
+                System.out.println("member.name = " + mem.getUsername());
             }
 
         } catch (Exception e) {
