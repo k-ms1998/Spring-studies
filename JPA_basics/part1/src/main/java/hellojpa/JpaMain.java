@@ -50,7 +50,7 @@ public class JpaMain {
             /**
              * Column id로 원하는 튜플을 찾아서 객체로 반환 받고, 해당 객체를 제거
              */
-            Member findMember = em.find(Member.class, 1L);
+            Member findMember = em.find(Member.class, 2L);
             em.remove(findMember);
 
             transaction.commit();
