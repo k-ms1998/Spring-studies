@@ -89,6 +89,21 @@ public class JpaMain {
 
         }
 
+        try {
+            transaction.begin();
+
+            MemberAuto memberAutoA = new MemberAuto();
+            em.persist(memberAutoA);
+
+            MemberAuto memberAutoB = new MemberAuto();
+            em.persist(memberAutoB);
+
+            transaction.commit();
+        } catch (Exception e) {
+            transaction.rollback();
+        }
+
+
         //항상 EntityManager랑 EntityManagerFactory를 close() 해줌
         em.close(); 
         emf.close();
