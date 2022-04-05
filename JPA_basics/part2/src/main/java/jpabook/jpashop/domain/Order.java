@@ -2,6 +2,8 @@ package jpabook.jpashop.domain;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "ORDERS")
@@ -21,6 +23,9 @@ public class Order {
 
     @Enumerated(value = EnumType.STRING)
     private OrderStatus status;
+
+    @OneToMany(mappedBy = "orderId")
+    private List<OrderItem> orderItemList = new ArrayList<>();
 
     public Long getId() {
         return id;
