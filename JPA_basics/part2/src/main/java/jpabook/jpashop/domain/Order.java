@@ -14,6 +14,9 @@ public class Order {
     @Column(name = "ORDER_ID")
     private Long id;
 
+    @OneToOne
+    @JoinColumn(name = "DELIVERY_ID")
+    private Delivery delivery;
 
     @ManyToOne // N:1 관계; Member가 여러개의 주문을 할 수 있지만, 주문서는 하나의 Member랑만 연관 되어 있음
     @JoinColumn(name = "MEMBER_ID") // ... member m JOIN orders o ON m.MEMBER_ID = o.MEMBER_ID;
