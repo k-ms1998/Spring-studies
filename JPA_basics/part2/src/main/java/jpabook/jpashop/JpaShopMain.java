@@ -2,6 +2,7 @@ package jpabook.jpashop;
 
 import jpabook.jpashop.domain.Member;
 import jpabook.jpashop.domain.Order;
+import jpabook.jpashop.domain.practice.Movie;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -11,6 +12,11 @@ import java.util.List;
 
 public class JpaShopMain {
     public static void main(String[] args) {
+//        mainMethod();
+        practiceMethod();
+    }
+
+    public static void mainMethod() {
         EntityManagerFactory emf = Persistence.createEntityManagerFactory("jpashop");
         EntityManager em = emf.createEntityManager();
         EntityTransaction transaction = em.getTransaction();
@@ -48,6 +54,31 @@ public class JpaShopMain {
                 System.out.println("o.getId() = " + o.getId());
             }
 
+
+            transaction.commit();
+        } catch (Exception e) {
+            transaction.rollback();
+        }finally {
+            em.close();
+        }
+
+        emf.close();
+    }
+
+    public static void practiceMethod() {
+        EntityManagerFactory emf = Persistence.createEntityManagerFactory("jpashop");
+        EntityManager em = emf.createEntityManager();
+        EntityTransaction transaction = em.getTransaction();
+
+        transaction.begin();
+        try {
+            Movie movie = new Movie();
+            movie.setActor("actorA");
+            movie.setDirector("directorA");
+            movie.setName("movieA");
+            movie.setPrice(15000);
+
+            em.persist(movie);
 
             transaction.commit();
         } catch (Exception e) {
