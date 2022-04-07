@@ -1,13 +1,11 @@
 package jpabook.jpashop;
 
+import jpabook.jpashop.domain.Address;
 import jpabook.jpashop.domain.Member;
 import jpabook.jpashop.domain.Order;
 import jpabook.jpashop.domain.practice.Movie;
 
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.EntityTransaction;
-import javax.persistence.Persistence;
+import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -17,7 +15,32 @@ public class JpaShopMain {
 //        practiceMethod();
 //        proxyPracticeMethod();
 //        practiceLazy();
-        cascadePractice();
+//        cascadePractice();
+        embeddedPractice();
+    }
+
+    private static void embeddedPractice() {
+        EntityManagerFactory emf = Persistence.createEntityManagerFactory("jpashop");
+        EntityManager em = emf.createEntityManager();
+        EntityTransaction transaction = em.getTransaction();
+
+        transaction.begin();
+        try {
+            Member member = new Member();
+            member.setName("memberA");
+            member.setHomeAddress(new Address("seoul", "blvd", "12345"));
+
+
+            em.persist(member);
+
+            transaction.commit();
+        } catch (Exception e) {
+            transaction.rollback();
+        }finally {
+            em.close();
+        }
+
+        emf.close();
     }
 
     private static void cascadePractice() {

@@ -11,11 +11,18 @@ public class Member extends BaseEntity{
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "MEMBER_ID")
     private Long id;
-
     private String name;
-    private String city;
-    private String street;
-    private String zipcode;
+
+    @Embedded
+    private Address homeAddress;
+
+    @Embedded
+    @AttributeOverrides({
+            @AttributeOverride(name="city",column = @Column(name = "WORK_CITY")),
+            @AttributeOverride(name="street",column = @Column(name = "WORK_STREET")),
+            @AttributeOverride(name="zipcode",column = @Column(name = "WORK_ZIPCODE")),
+    })
+    private Address workAddress;
 
     /**
      * cascade = CascadeType.PERSIST || cascade = CascadeType.ALL
@@ -46,28 +53,20 @@ public class Member extends BaseEntity{
         this.name = name;
     }
 
-    public String getCity() {
-        return city;
+    public Address getHomeAddress() {
+        return homeAddress;
     }
 
-    public void setCity(String city) {
-        this.city = city;
+    public void setHomeAddress(Address homeAddress) {
+        this.homeAddress = homeAddress;
     }
 
-    public String getStreet() {
-        return street;
+    public Address getWorkAddress() {
+        return workAddress;
     }
 
-    public void setStreet(String street) {
-        this.street = street;
-    }
-
-    public String getZipcode() {
-        return zipcode;
-    }
-
-    public void setZipcode(String zipcode) {
-        this.zipcode = zipcode;
+    public void setWorkAddress(Address workAddress) {
+        this.workAddress = workAddress;
     }
 
     public List<Order> getOrderList() {
