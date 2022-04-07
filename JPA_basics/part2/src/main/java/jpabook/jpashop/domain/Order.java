@@ -18,7 +18,13 @@ public class Order extends BaseEntity{
     @JoinColumn(name = "DELIVERY_ID")
     private Delivery delivery;
 
-    @ManyToOne // N:1 관계; Member가 여러개의 주문을 할 수 있지만, 주문서는 하나의 Member랑만 연관 되어 있음
+    /**
+     * 실무에서는 LAZY Loading/지연 로딩을 사용하는게 적합
+     * Because, 즉시 로딩시 예상하지 못한 SQL문 발생 && JPQL에서 N+1 문제를 일으킨다
+     * 즉시 로딩시, 자동으로 연관된 테이블을 조인(JOIN)해서 가죠오기 때문에 엄청난 성능 저하 발생 가능성이 있음
+     */
+    @ManyToOne(fetch = FetchType.LAZY) // DEFAULT == FetchType.EAGER (==즉시 로딩)
+//    @ManyToOne // N:1 관계; Member가 여러개의 주문을 할 수 있지만, 주문서는 하나의 Member랑만 연관 되어 있음
     @JoinColumn(name = "MEMBER_ID") // ... member m JOIN orders o ON m.MEMBER_ID = o.MEMBER_ID;
     private Member memberId; // memberId에 Member 객체 자체를 주입 함
 
