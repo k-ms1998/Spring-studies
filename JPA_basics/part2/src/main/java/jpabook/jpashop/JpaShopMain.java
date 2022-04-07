@@ -16,7 +16,40 @@ public class JpaShopMain {
 //        mainMethod();
 //        practiceMethod();
 //        proxyPracticeMethod();
-        practiceLazy();
+//        practiceLazy();
+        cascadePractice();
+    }
+
+    private static void cascadePractice() {
+        EntityManagerFactory emf = Persistence.createEntityManagerFactory("jpashop");
+        EntityManager em = emf.createEntityManager();
+        EntityTransaction transaction = em.getTransaction();
+
+        transaction.begin();
+        try {
+            Member member = new Member();
+            member.setName("memberA");
+
+            Order orderA = new Order();
+            Order orderB = new Order();
+
+            orderA.setMemberId(member);
+            orderB.setMemberId(member);
+
+            member.getOrderList().add(orderA);
+            member.getOrderList().add(orderB);
+
+            em.persist(member);
+
+            transaction.commit();
+        } catch (Exception e) {
+            transaction.rollback();
+        }finally {
+            em.close();
+        }
+
+        emf.close();
+
     }
 
     private static void practiceLazy() {
