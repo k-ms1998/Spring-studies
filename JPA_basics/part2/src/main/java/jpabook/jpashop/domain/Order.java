@@ -14,7 +14,11 @@ public class Order extends BaseEntity{
     @Column(name = "ORDER_ID")
     private Long id;
 
-    @OneToOne
+    /**
+     * @ManyToOne && @OneToOne DEFAULT는 FetchType.EAGER
+     * 그러므로, FetchType.LAZY로 설정해주는게 권장됨
+     */
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "DELIVERY_ID")
     private Delivery delivery;
 

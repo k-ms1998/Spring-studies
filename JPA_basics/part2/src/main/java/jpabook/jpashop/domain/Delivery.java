@@ -10,11 +10,7 @@ public class Delivery extends BaseEntity{
     @Column(name = "DELIVERY_ID")
     private Long id;
 
-    /**
-     * @ManyToOne && @OneToOne DEFAULT는 FetchType.EAGER
-     * 그러므로, FetchType.LAZY로 설정해주는게 권장됨
-     */
-    @OneToOne(mappedBy = "delivery", fetch = FetchType.LAZY)
+    @OneToOne(mappedBy = "delivery")
     private Order order;
 
     private String city;
