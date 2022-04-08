@@ -1,6 +1,7 @@
 package jpabook.jpashop;
 
 import jpabook.jpashop.domain.Address;
+import jpabook.jpashop.domain.AddressEntity;
 import jpabook.jpashop.domain.Member;
 import jpabook.jpashop.domain.Order;
 import jpabook.jpashop.domain.practice.Movie;
@@ -8,6 +9,7 @@ import jpabook.jpashop.domain.practice.Movie;
 import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 
 public class JpaShopMain {
     public static void main(String[] args) {
@@ -16,7 +18,86 @@ public class JpaShopMain {
 //        proxyPracticeMethod();
 //        practiceLazy();
 //        cascadePractice();
-        embeddedPractice();
+//        embeddedPractice();
+        elementCollectionPractice();
+    }
+
+    private static void elementCollectionPractice() {
+        EntityManagerFactory emf = Persistence.createEntityManagerFactory("jpashop");
+        EntityManager em = emf.createEntityManager();
+        EntityTransaction transaction = em.getTransaction();
+
+        transaction.begin();
+        try {
+            Member member = new Member();
+            member.setName("memberA");
+            member.setHomeAddress(new Address("seoul", "blvd", "12345"));
+
+            //값 타입 저장
+            member.getFavoriteFoods().add("Chicken");
+            member.getFavoriteFoods().add("Pizza");
+            member.getFavoriteFoods().add("Soda");
+
+            member.getAddressHistory().add(new AddressEntity(new Address("incheon", "street", "12346")));
+            member.getAddressHistory().add(new AddressEntity(new Address("busan", "ave", "12347")));
+
+            Member member2 = new Member();
+            member.setName("memberB");
+            member.setHomeAddress(new Address("seoul", "blvd", "22345"));
+
+            member2.getFavoriteFoods().add("Pizza");
+
+            member2.getAddressHistory().add(new AddressEntity(new Address("ulsan", "street", "22346")));
+
+            em.persist(member);
+            em.persist(member2);
+
+            em.flush();
+            em.clear();
+
+
+            Member findMember1 = em.find(Member.class, member.getId());
+            // 값 타입 조회
+            List<AddressEntity> addressHistory1 = findMember1.getAddressHistory();
+            for (AddressEntity address : addressHistory1) {
+                System.out.println("address = " + address.getAddress().getCity());
+            }
+            Set<String> favoriteFoods1 = findMember1.getFavoriteFoods();
+            for (String s : favoriteFoods1) {
+                System.out.println("s = " + s);
+            }
+
+            //값 타입 수정
+            /**
+             * findMember1이 같은 city, 같은 street에서 zipcode만 다른 곳으로 이사 갔다고 가정했을때,
+             * 현 주소를 prev_address 테이블에 추가하고, zipcode만 바꾸고 싶은 상황
+             * 이때, Address는 값 타입 컬렉션이기 때문에, zipcode만 수정하면 안되고, Address 임베디드 타입을 전체를 새로 저장시켜 줘야됨
+             * => findMember1.setHomeAddress(new Address(oldAddress.getCity(), oldAddress.getStreet(), "77777"));
+             */
+            Address oldAddress = findMember1.getHomeAddress();
+            findMember1.getAddressHistory().add(new AddressEntity(oldAddress));
+            findMember1.setHomeAddress(new Address(oldAddress.getCity(), oldAddress.getStreet(), "77777"));
+
+            //Pizza -> Pasta로 바꾸고 싶을때 => 해당 값을 삭제하고 새로 추가해 줘야됨
+            findMember1.getFavoriteFoods().remove("Pizza");
+            findMember1.getFavoriteFoods().add("Pasta");
+
+
+            /**
+             * Address 컬렉션에 저장된 값들을 비교해서, 모든 값들이 일치하면 같은 객체이다
+             * 이떄, Address에서 equals()를 오버라이딩 해서, 모든 값들(city, street, zipcode)이 같으면 같은 객체라고 인식하도록 코딩 해줘야 한다.
+             */
+            findMember1.getAddressHistory().remove(new AddressEntity(new Address("busan", "ave", "12347")));
+
+            transaction.commit();
+        } catch (Exception e) {
+            transaction.rollback();
+        }finally {
+            em.close();
+        }
+
+        emf.close();
+
     }
 
     private static void embeddedPractice() {
@@ -30,6 +111,8 @@ public class JpaShopMain {
             member.setName("memberA");
             member.setHomeAddress(new Address("seoul", "blvd", "12345"));
 
+            Address oldAddress = member.getHomeAddress();
+            member.setHomeAddress(new Address(oldAddress.getCity(), oldAddress.getStreet(), "77777"));
 
             em.persist(member);
 
