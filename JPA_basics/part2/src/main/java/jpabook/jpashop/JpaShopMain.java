@@ -7,6 +7,9 @@ import jpabook.jpashop.domain.Order;
 import jpabook.jpashop.domain.practice.Movie;
 
 import javax.persistence.*;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Root;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
@@ -19,7 +22,77 @@ public class JpaShopMain {
 //        practiceLazy();
 //        cascadePractice();
 //        embeddedPractice();
-        elementCollectionPractice();
+//        elementCollectionPractice();
+        criteriaAndNativePractice();
+    }
+
+    private static void criteriaAndNativePractice() {
+        /**
+         *   Criteria:
+         *   문자가 아닌 자바코드로 JPQL을 작성할 수 있음
+         * • JPQL 빌더 역할
+         * • JPA 공식 기능
+         * • 단점: 너무 복잡하고 실용성이 없다.
+         * • => Criteria 대신에 QueryDSL 사용 권장
+         */
+        EntityManagerFactory emf = Persistence.createEntityManagerFactory("jpashop");
+        EntityManager em = emf.createEntityManager();
+        EntityTransaction transaction = em.getTransaction();
+
+        transaction.begin();
+        try {
+            Member memberA = new Member();
+            memberA.setName("memberA");
+
+            Member memberB = new Member();
+            memberB.setName("memberB");
+
+            Member memberC = new Member();
+            memberC.setName("userC");
+
+            em.persist(memberA);
+            em.persist(memberB);
+            em.persist(memberC);
+
+            em.flush();
+            em.clear();
+
+            //Criteria 사용 준비
+            CriteriaBuilder cb = em.getCriteriaBuilder();
+            CriteriaQuery<Member> query = cb.createQuery(Member.class);
+
+
+
+            System.out.println("==============QUERY===============");
+            /**
+             *  SELECT *FROM Member m WHERE m.name like "%member%";
+             */
+            Root<Member> m = query.from(Member.class);
+            CriteriaQuery<Member> criteriaQuery = query.select(m).where(cb.like(m.get("name"), "%member%"));
+            List<Member> resultList = em.createQuery(criteriaQuery)
+                    .getResultList();
+
+            for (Member member : resultList) {
+                System.out.println("member.getName() = " + member.getName());
+            }
+
+            //Native Query
+            String q = "SELECT *FROM member m WHERE m.name like '%member%'";
+            List<Member> resultList1 = em.createNativeQuery(q, Member.class)
+                    .getResultList();
+            for (Member nativeMember : resultList1) {
+                System.out.println("nativeMember.getName() = " + nativeMember.getName());
+            }
+
+            transaction.commit();
+        } catch (Exception e) {
+            transaction.rollback();
+        }finally {
+            em.close();
+        }
+        
+        emf.close();
+
     }
 
     private static void elementCollectionPractice() {
