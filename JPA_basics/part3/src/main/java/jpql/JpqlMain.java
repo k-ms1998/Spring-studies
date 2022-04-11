@@ -9,7 +9,73 @@ import java.util.List;
 public class JpqlMain {
     public static void main(String[] args) {
 //        projectionPractice();
-        pagingPractice();
+//        pagingPractice();
+        joinPractice();
+    }
+
+    private static void joinPractice() {
+        EntityManagerFactory emf = Persistence.createEntityManagerFactory("jpql");
+        EntityManager em = emf.createEntityManager();
+        EntityTransaction transaction = em.getTransaction();
+
+        transaction.begin();
+        try {
+            Team teamA = new Team();
+            teamA.setName("TeamA");
+
+            Team teamB = new Team();
+            teamB.setName("TeamB");
+
+            em.persist(teamA);
+            em.persist(teamB);
+
+            for (int i = 1; i <= 10; i++) {
+                Member tmpMember = new Member();
+                tmpMember.setUsername("member" + i);
+                tmpMember.setAge(i + 20);
+                if (i % 2 == 0) {
+                    tmpMember.setTeam(teamA);
+                } else {
+                    tmpMember.setTeam(teamB);
+                }
+
+                em.persist(tmpMember);
+            }
+
+            em.flush();
+            em.clear();
+
+            /**
+             * SELECT m.*, t.name FROM member m LEFT JOIN team t ON m.team_id = t.id WHERE t.name="TeamA";
+             */
+            String query = "select m from Member m left join m.team t where t.name=:teamName";
+            List<Member> resultList = em.createQuery(query, Member.class)
+                    .setParameter("teamName", "TeamA")
+                    .getResultList();
+
+            for (Member member : resultList) {
+                System.out.println("member.getAge() = " + member.getAge() + ", member.getTeam() = " + member.getTeam().getName()
+                        + ", member.getTeam().getId() = " + member.getTeam().getId());
+            }
+
+            String query2 = "select m from Member m left join Team t on m.id = t.id where t.name=:teamName";
+            List<Member> resultList2 = em.createQuery(query2, Member.class)
+                    .setParameter("teamName", "TeamA")
+                    .getResultList();
+
+            for (Member member2 : resultList2) {
+                System.out.println("member2.getAge() = " + member2.getAge() + ", member2.getTeam() = " + member2.getTeam().getName()
+                        + ", member2.getTeam().getId() = " + member2.getTeam().getId());
+            }
+
+            transaction.commit();
+        } catch (Exception e) {
+            transaction.rollback();
+        } finally{
+            em.close();
+        }
+
+        emf.close();
     }
 
     private static void pagingPractice() {
