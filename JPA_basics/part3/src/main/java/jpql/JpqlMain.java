@@ -8,8 +8,54 @@ import java.util.List;
 
 public class JpqlMain {
     public static void main(String[] args) {
-        projectionPractice();
+//        projectionPractice();
+        pagingPractice();
+    }
 
+    private static void pagingPractice() {
+        /**
+         * 페이징 API
+         * setFirstResult(int startPosition) : 조회 시작 위치
+         * setMaxResults(int maxResult) : 조회할 데이터 수
+         * SELECT *FROM member ORDER BY age DESC LIMIT 5,10; ||  SELECT *FROM member ORDER BY age DESC LIMIT 10 OFFSET 5;
+         */
+        EntityManagerFactory emf = Persistence.createEntityManagerFactory("jpql");
+        EntityManager em = emf.createEntityManager();
+        EntityTransaction transaction = em.getTransaction();
+
+        transaction.begin();
+        try {
+
+            for (int i = 1; i <= 100; i++) {
+                Member tmpMember = new Member();
+                tmpMember.setUsername("member" + i);
+                tmpMember.setAge(i + 20);
+                em.persist(tmpMember);
+            }
+
+            em.flush();
+            em.clear();
+
+            // SELECT *FROM member ORDER BY age DESC LIMIT 5,10; ||  SELECT *FROM member ORDER BY age DESC LIMIT 10 OFFSET 5;
+            List<Member> resultList = em.createQuery("select m from Member m order by m.age desc", Member.class)
+                    .setFirstResult(5)
+                    .setMaxResults(10)
+                    .getResultList();
+
+            System.out.println("resultList.size() = " + resultList.size());
+            for (Member member : resultList) {
+                System.out.println("member = " + member);
+            }
+
+
+            transaction.commit();
+        } catch (Exception e) {
+            transaction.rollback();
+        } finally{
+            em.close();
+        }
+
+        emf.close();
     }
 
     private static void projectionPractice() {
