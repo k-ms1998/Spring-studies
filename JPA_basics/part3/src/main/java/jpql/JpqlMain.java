@@ -9,7 +9,256 @@ public class JpqlMain {
 //        pagingPractice();
 //        joinPractice();
 //        dataTypesPractice();
-        casePractice();
+//        casePractice();
+//        fetchJoinPractice1();
+//        fetchJoinPractice1_1();
+        fetchJoinPractice2();
+    }
+
+    private static void fetchJoinPractice2() {
+        EntityManagerFactory emf = Persistence.createEntityManagerFactory("jpql");
+        EntityManager em = emf.createEntityManager();
+        EntityTransaction transaction = em.getTransaction();
+
+        transaction.begin();
+        try {
+            Team teamA = new Team();
+            teamA.setName("TeamA");
+
+            Team teamB = new Team();
+            teamB.setName("TeamB");
+
+            em.persist(teamA);
+            em.persist(teamB);
+
+            Member memberA = new Member();
+            memberA.setUsername("MemberA");
+            memberA.setTeam(teamA); //setTeam 에서 team에 member도 추가하도록 개발했기 때문에 추가로 team.getMembers().add(team) 필요 X
+
+            Member memberB = new Member();
+            memberB.setUsername("MemberB");
+            memberB.setTeam(teamA);
+
+            Member memberC = new Member();
+            memberC.setUsername("MemberC");
+            memberC.setTeam(teamB);
+
+            em.persist(memberA);
+            em.persist(memberB);
+            em.persist(memberC);
+
+            em.flush();
+            em.clear();
+
+            String query = "select t from Team t join fetch t.members";
+            List<Team> resultList = em.createQuery(query, Team.class)
+                    .setFirstResult(0)
+                    .setMaxResults(1)
+                    .getResultList();
+            for (Team team : resultList) {
+                System.out.println("team.getName() = " + team.getName() +
+                        "| members = " + team.getMembers().size());
+                for (Member member : team.getMembers()) {
+                    System.out.println("-> member = " + member);
+                }
+            }
+            /**
+             * JOIN FETCH 랑 페이징 API(setFirstResult, setMaxResult, etc.)을 함께 사용하면 아래 같은 경고를 남김
+             * WARN: HHH000104: firstResult/maxResults specified with collection fetch; applying in memory!
+             */
+            
+            
+
+            transaction.commit();
+        } catch (Exception e) {
+
+            transaction.rollback();
+        } finally{
+            em.close();
+        }
+
+        emf.close();
+    }
+
+    private static void fetchJoinPractice1_1() {
+        EntityManagerFactory emf = Persistence.createEntityManagerFactory("jpql");
+        EntityManager em = emf.createEntityManager();
+        EntityTransaction transaction = em.getTransaction();
+
+        transaction.begin();
+        try {
+            Team teamA = new Team();
+            teamA.setName("TeamA");
+
+            Team teamB = new Team();
+            teamB.setName("TeamB");
+
+            em.persist(teamA);
+            em.persist(teamB);
+
+            Member memberA = new Member();
+            memberA.setUsername("MemberA");
+            memberA.setTeam(teamA); //setTeam 에서 team에 member도 추가하도록 개발했기 때문에 추가로 team.getMembers().add(team) 필요 X
+
+            Member memberB = new Member();
+            memberB.setUsername("MemberB");
+            memberB.setTeam(teamA);
+
+            Member memberC = new Member();
+            memberC.setUsername("MemberC");
+            memberC.setTeam(teamB);
+
+            em.persist(memberA);
+            em.persist(memberB);
+            em.persist(memberC);
+
+            em.flush();
+            em.clear();
+
+            /**
+             * SELECT   t.*, m.* FROM Team t JOIN Member m ON t.id = m.team_id;
+             */
+            String queryA = "select t from Team t join fetch t.members";
+            List<Team> resultListA = em.createQuery(queryA, Team.class)
+                    .getResultList();
+            for (Team team : resultListA) {
+                System.out.println("team.getName() = " + team.getName() +
+                        ", team.getMembers().size() = " + team.getMembers().size());
+            }
+
+            String queryB = "select distinct t from Team t join fetch t.members";
+            List<Team> resultListB = em.createQuery(queryB, Team.class)
+                    .getResultList();
+            for (Team team : resultListB) {
+                System.out.println("team.getName() = " + team.getName() +
+                        ", team.getMembers().size() = " + team.getMembers().size());
+            }
+
+            transaction.commit();
+        } catch (Exception e) {
+
+            transaction.rollback();
+        } finally{
+            em.close();
+        }
+
+        emf.close();
+    }
+
+    private static void fetchJoinPractice1() {
+        EntityManagerFactory emf = Persistence.createEntityManagerFactory("jpql");
+        EntityManager em = emf.createEntityManager();
+        EntityTransaction transaction = em.getTransaction();
+
+        transaction.begin();
+        try {
+            Team teamA = new Team();
+            teamA.setName("TeamA");
+
+            Team teamB = new Team();
+            teamB.setName("TeamB");
+
+            em.persist(teamA);
+            em.persist(teamB);
+
+            Member memberA = new Member();
+            memberA.setUsername("MemberA");
+            memberA.setTeam(teamA); //setTeam 에서 team에 member도 추가하도록 개발했기 때문에 추가로 team.getMembers().add(team) 필요 X
+
+            Member memberB = new Member();
+            memberB.setUsername("MemberB");
+            memberB.setTeam(teamA);
+
+            Member memberC = new Member();
+            memberC.setUsername("MemberC");
+            memberC.setTeam(teamB);
+
+            em.persist(memberA);
+            em.persist(memberB);
+            em.persist(memberC);
+
+            em.flush();
+            em.clear();
+
+            String queryA = "select m from Member m";
+            List<Member> resultListA = em.createQuery(queryA, Member.class)
+                    .getResultList();
+            for (Member member : resultListA) {
+                System.out.println("member.getUsername() = " + member.getUsername()
+                        + ", member.getTeam().getName() = " + member.getTeam().getName());
+                /**
+                 * RESULT:
+                 *     select
+                 *         team0_.id as id1_3_0_,
+                 *         team0_.name as name2_3_0_
+                 *     from
+                 *         Team team0_
+                 *     where
+                 *         team0_.id=?
+                 * member.getUsername() = MemberA, member.getTeam().getName() = TeamA
+                 * member.getUsername() = MemberB, member.getTeam().getName() = TeamA
+                 * Hibernate:
+                 *     select
+                 *         team0_.id as id1_3_0_,
+                 *         team0_.name as name2_3_0_
+                 *     from
+                 *         Team team0_
+                 *     where
+                 *         team0_.id=?
+                 * member.getUsername() = MemberC, member.getTeam().getName() = TeamB
+                 *
+                 * MemberA, teamA => DB => 영속성 컨텍스트에 teamA가 없기 때문에 SQL문으로 DB에서 가져옴
+                 * MemberB, teamA => 1차 캐시 => MemberA때 teamA가 영속성 컨텍스트에 추가 됐기 때문에 영속성 컨텍스트/1차 캐시에서 가져옴
+                 * MemberC, teamB => DB => 양속성 컨텍스트에 teamB가 없기 때문에 SQL문으로 DB에서 가져옴
+                 * 그러므로, 만약에 각 회원이 각각 다른팀에 소속되어 있으면, 팀의 갯수 만큼 쿼리문이 날라감 => 성능 저하, N+1
+                 * 이런 문제점을 해결하기 위해 fetch join 사용
+                 */
+            }
+
+            String queryB = "select m from Member m join fetch m.team";
+            List<Member> resultListB = em.createQuery(queryB, Member.class)
+                    .getResultList();
+            for (Member member : resultListB) {
+                System.out.println("memberJoinFetch.getUsername() = " + member.getUsername()
+                        + ", memberJoinFetch.getTeam().getName() = " + member.getTeam().getName());
+                /**
+                 * RESULT:
+                 * Hibernate:
+                 *     /* select
+                 *         m
+                 *     from
+                 *         Member m
+                 *     join
+                 *         fetch m.team *\/select
+                 *          member0_.id as id1_0_0_,
+                 *          team1_.id as id1_3_1_,
+                 *          member0_.age as age2_0_0_,
+                 *          member0_.MEMBER_TYPE as MEMBER_T3_0_0_,
+                 *          member0_.TEAM_ID as TEAM_ID5_0_0_,
+                 *          member0_.username as username4_0_0_,
+                 *          team1_.name as name2_3_1_
+                 *          from
+                 *              Member member0_
+                 *          inner join
+                 *              Team team1_
+                 *                  on member0_.TEAM_ID = team1_.id
+                 * memberJoinFetch.getUsername() = MemberA, memberJoinFetch.getTeam().getName() = TeamA
+                 * memberJoinFetch.getUsername() = MemberB, memberJoinFetch.getTeam().getName() = TeamA
+                 * memberJoinFetch.getUsername() = MemberC, memberJoinFetch.getTeam().getName() = TeamB
+                 * 
+                 * 프록시 X, 실제로 member와 team을 inner join한 값을 resultListB에 저장
+                 */
+            }
+
+            transaction.commit();
+        } catch (Exception e) {
+
+            transaction.rollback();
+        } finally{
+            em.close();
+        }
+
+        emf.close();
     }
 
     private static void casePractice() {
