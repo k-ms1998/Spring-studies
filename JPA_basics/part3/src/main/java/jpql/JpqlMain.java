@@ -12,7 +12,53 @@ public class JpqlMain {
 //        casePractice();
 //        fetchJoinPractice1();
 //        fetchJoinPractice1_1();
-        fetchJoinPractice2();
+//        fetchJoinPractice2();
+        namedQueryPractice();
+    }
+
+    private static void namedQueryPractice() {
+        EntityManagerFactory emf = Persistence.createEntityManagerFactory("jpql");
+        EntityManager em = emf.createEntityManager();
+        EntityTransaction transaction = em.getTransaction();
+
+        transaction.begin();
+        try {
+            Member memberA = new Member();
+            memberA.setUsername("MemberA");
+
+            Member memberB = new Member();
+            memberB.setUsername("MemberB");
+
+            em.persist(memberA);
+            em.persist(memberB);
+
+            em.flush();
+            em.clear();
+
+            /**
+             * Named 쿼리 장점:
+             * 1. 미리 정의해서 이름을 부여해두고 사용하는 JPQL
+             * 2. 정적 쿼리
+             * 3. 애플리케이션 로딩 시점에 초기화 후 재사용
+             * 4. 애플리케이션 로딩 시점에 쿼리를 검증
+             */
+            List<Member> resultList = em.createNamedQuery("Member.findByUsername", Member.class)
+                    .setParameter("userName", "MemberA")
+                    .getResultList();
+            for (Member member : resultList) {
+                System.out.println("member = " + member);
+            }
+            
+
+            transaction.commit();
+        } catch (Exception e) {
+
+            transaction.rollback();
+        } finally{
+            em.close();
+        }
+
+        emf.close();
     }
 
     private static void fetchJoinPractice2() {
