@@ -1,9 +1,6 @@
 package jpql;
 
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.EntityTransaction;
-import javax.persistence.Persistence;
+import javax.persistence.*;
 import java.util.List;
 
 public class JpqlMain {
@@ -11,7 +8,95 @@ public class JpqlMain {
 //        projectionPractice();
 //        pagingPractice();
 //        joinPractice();
-        dataTypesPractice();
+//        dataTypesPractice();
+        casePractice();
+    }
+
+    private static void casePractice() {
+        EntityManagerFactory emf = Persistence.createEntityManagerFactory("jpql");
+        EntityManager em = emf.createEntityManager();
+        EntityTransaction transaction = em.getTransaction();
+
+        transaction.begin();
+        try {
+            Team teamA = new Team();
+            teamA.setName("TeamA");
+
+            Team teamB = new Team();
+            teamB.setName("TeamB");
+
+            em.persist(teamA);
+            em.persist(teamB);
+
+            for (int i = 5; i <= 20; i++) {
+                Member tmpMember = new Member();
+                if (i % 3 == 0) {
+                    tmpMember.setUsername("member" + i);
+                }
+
+                tmpMember.setAge(i + 10);
+                if (i % 2 == 0) {
+                    tmpMember.setTeam(teamA);
+                    tmpMember.setMemberType(MemberType.ADMIN);
+                } else {
+                    tmpMember.setTeam(teamB);
+                    tmpMember.setMemberType(MemberType.USER);
+                }
+
+                em.persist(tmpMember);
+            }
+
+            em.flush();
+            em.clear();
+
+            /**
+             * case
+             * when
+             * end
+             */
+            String queryA = "select" +
+                        " case when m.age <= 20 then '청소년'" +
+                        " when m.age <= 25 then '청년'" +
+                        " else '성인'" +
+                        " end" +
+                    " from Member m";
+            List<String> resultListA = em.createQuery(queryA, String.class)
+                    .getResultList();
+            for (String s : resultListA) {
+                System.out.println("s.case = " + s);
+            }
+
+            /**
+             * 사용자 이름이 없으면 '이름 미입력' 반환
+             */
+            String queryB = "select coalesce(m.username, '이름 미입력') from Member m";
+            List<String> resultListB = em.createQuery(queryB, String.class)
+                    .getResultList();
+            for (String s : resultListB) {
+                System.out.println("s.coalesce = " + s);
+            }
+
+            /**
+             * 사용자 나이가 20이면 null을 반환하고, 나머지는 본인의 나이를 반환
+             */
+            String queryC = "select NULLIF(m.age, :age) from Member m";
+            List<Integer> resultListC = em.createQuery(queryC, Integer.class)
+                    .setParameter("age", 20)
+                    .getResultList();
+            System.out.println("resultListC.size() = " + resultListC.size());
+            for (Integer s : resultListC) {
+                System.out.println("s.nullif = " + s);
+            }
+
+            transaction.commit();
+        } catch (Exception e) {
+
+            transaction.rollback();
+        } finally{
+            em.close();
+        }
+
+        emf.close();
     }
 
     private static void dataTypesPractice() {
