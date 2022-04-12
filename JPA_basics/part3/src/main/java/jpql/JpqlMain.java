@@ -13,7 +13,54 @@ public class JpqlMain {
 //        fetchJoinPractice1();
 //        fetchJoinPractice1_1();
 //        fetchJoinPractice2();
-        namedQueryPractice();
+//        namedQueryPractice();
+        bulkOperationPractice();
+    }
+
+    private static void bulkOperationPractice() {
+        EntityManagerFactory emf = Persistence.createEntityManagerFactory("jpql");
+        EntityManager em = emf.createEntityManager();
+        EntityTransaction transaction = em.getTransaction();
+
+        transaction.begin();
+        try {
+            Member memberA = new Member();
+            memberA.setUsername("MemberA");
+            memberA.setAge(30);
+
+            Member memberB = new Member();
+            memberB.setUsername("MemberB");
+            memberB.setAge(25);
+
+            em.persist(memberA);
+            em.persist(memberB);
+
+            /**
+             * 벌크 연산 시, 한번 flush()를 한 후, DB에 바로 벌크 연산을 실행
+             * 그러므로, 해당 예제에서는 executeUpdate() 시 update SQL문이 실행돼서 DB에서는 모든 Member의 age가 20으로 수정됨
+             * But, 영속성 컨텍스트는 무시하고 바로 DB에 직접 update 함으로, 영속성 컨텍스트에서는 update 전의 age로 설정되어 있음
+             * 그렇기 때문에, 벌크 연산 실행 후, 영속성 컨텍스트를 초기화 해줘야됨
+             */
+            String query = "update Member m set m.age=20";
+            int resultCount = em.createQuery(query)
+                    .executeUpdate();
+            System.out.println("resultCount = " + resultCount);
+
+            Member findMemberBefore = em.find(Member.class, memberA.getId());
+            System.out.println("memberA.getAge().before.em.clear() = " + findMemberBefore.getAge()); //memberA.age == 30
+            em.clear(); //영속성 컨텍스트 초기화
+            Member findMemberAfter = em.find(Member.class, memberA.getId());
+            System.out.println("memberA.getAge().after.em.clear() = " + findMemberAfter.getAge()); //memberA.age == 20
+
+            transaction.commit();
+        } catch (Exception e) {
+
+            transaction.rollback();
+        } finally{
+            em.close();
+        }
+
+        emf.close();
     }
 
     private static void namedQueryPractice() {
