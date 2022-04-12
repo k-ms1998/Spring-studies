@@ -10,7 +10,75 @@ public class JpqlMain {
     public static void main(String[] args) {
 //        projectionPractice();
 //        pagingPractice();
-        joinPractice();
+//        joinPractice();
+        dataTypesPractice();
+    }
+
+    private static void dataTypesPractice() {
+        EntityManagerFactory emf = Persistence.createEntityManagerFactory("jpql");
+        EntityManager em = emf.createEntityManager();
+        EntityTransaction transaction = em.getTransaction();
+
+        transaction.begin();
+        try {
+            Team teamA = new Team();
+            teamA.setName("TeamA");
+
+            Team teamB = new Team();
+            teamB.setName("TeamB");
+
+            em.persist(teamA);
+            em.persist(teamB);
+
+            for (int i = 1; i <= 10; i++) {
+                Member tmpMember = new Member();
+                if (i % 3 == 0) {
+                    tmpMember.setUsername("member" + i);
+                }
+                else{
+                    tmpMember.setUsername("user" + i);
+                }
+                tmpMember.setAge(i + 20);
+                if (i % 2 == 0) {
+                    tmpMember.setTeam(teamA);
+                    tmpMember.setMemberType(MemberType.ADMIN);
+                } else {
+                    tmpMember.setTeam(teamB);
+                    tmpMember.setMemberType(MemberType.USER);
+                }
+
+                em.persist(tmpMember);
+            }
+
+            em.flush();
+            em.clear();
+
+            /**
+             * new MemberDto(Long id, MemberType memberType)
+             */
+            String query = "select new jpql.MemberDTO(m.id, m.age, m.memberType) from Member m" +
+                    " where m.memberType = :memType" +
+                    " and m.age between 20 and 25" +
+                    " and m.username like :userName";
+            List<MemberDTO> resultList = em.createQuery(query, MemberDTO.class)
+                    .setParameter("memType", MemberType.USER)
+                    .setParameter("userName", "%user%")
+                    .getResultList();
+            for (MemberDTO memberDTO : resultList) {
+                System.out.println("memberDTO.getAge() = " + memberDTO.getAge()
+                        + ", memberDTO.getMemberType() = " + memberDTO.getMemberType());
+            }
+
+
+            transaction.commit();
+        } catch (Exception e) {
+            transaction.rollback();
+        } finally{
+            em.close();
+        }
+
+        emf.close();
+
     }
 
     private static void joinPractice() {
