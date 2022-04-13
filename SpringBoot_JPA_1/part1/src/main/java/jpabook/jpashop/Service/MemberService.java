@@ -41,8 +41,8 @@ public class MemberService {
     /**
      * 회원 하나만 존회
      */
-    public Member findOne(Member member) {
-        return memberRepository.findOne(member.getId());
+    public Member findOne(Long id) {
+        return memberRepository.findOne(id);
     }
 
     private void validateDuplicateMember(Member member) {
