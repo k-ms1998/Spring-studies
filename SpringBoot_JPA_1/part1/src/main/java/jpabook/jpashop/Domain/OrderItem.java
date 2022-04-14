@@ -1,7 +1,9 @@
 package jpabook.jpashop.Domain;
 
 import jpabook.jpashop.Domain.item.Item;
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.aspectj.weaver.ast.Or;
 
@@ -10,6 +12,7 @@ import javax.persistence.*;
 @Entity
 @Getter
 @Setter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class OrderItem {
 
     @Id
@@ -31,6 +34,7 @@ public class OrderItem {
 
     /**
      * 생성 메서드
+     * 해당 메서드를 통해서 필요한 엔티티들을 set 해줌
      */
     static public OrderItem createOrderItem(Item item, int orderPrice, int count) {
         OrderItem orderItem = new OrderItem();
