@@ -25,4 +25,12 @@ public class Member {
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "member")
     private List<Order> orders = new ArrayList<>();
 
+    static public Member createMember(String username, Address address) {
+        Member member = new Member();
+        member.setUsername(username);
+        member.setAddress(address);
+
+        return member;
+    }
+
 }
