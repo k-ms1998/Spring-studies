@@ -51,4 +51,10 @@ public class MemberService {
             throw new IllegalStateException("이미 존재하는 회원입니다!");
         }
     }
+
+    @Transactional
+    public void update(Long id, String username) {
+        Member findMember = memberRepository.findOne(id);
+        findMember.setUsername(username); //변경 감지로 값을 수정 => merge()보다 추천하는 방식
+    }
 }
