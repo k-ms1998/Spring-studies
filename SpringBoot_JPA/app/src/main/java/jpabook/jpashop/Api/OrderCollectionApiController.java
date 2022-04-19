@@ -291,8 +291,15 @@ public class OrderCollectionApiController {
         return new Result(orderQueryDtos);
     }
 
-    @GetMapping("/api/v6/collection-orders")
+    @GetMapping("/api/v5/collection-orders")
     public Result ordersV5() {
+        List<OrderQueryCollectionDTO> orderQueryDtos = orderQueryRepository.findOrderQueryDtos2();
+
+        return new Result(orderQueryDtos);
+    }
+
+    @GetMapping("/api/v6/collection-orders")
+    public Result ordersV6() {
         List<OrderFlatDTO> orderQueryDtos = orderQueryRepository.findOrderQueryDtos3();
         /**
          * orderQueryDtos는 member, delivery, orderItem, item을 모두 JOIN한 쿼리를 반환한 값을 갖고 있습니다
