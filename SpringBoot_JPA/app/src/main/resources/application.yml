@@ -12,5 +12,6 @@ spring:
       hibernate:
         format-sql: true
         default_batch_fetch_size: 100
+    open-in-view: false
 logging.level:
   org.hibernate.SQL: debug

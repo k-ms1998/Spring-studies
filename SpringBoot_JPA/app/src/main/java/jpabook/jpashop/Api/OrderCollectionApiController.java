@@ -9,6 +9,8 @@ import jpabook.jpashop.Repository.Order.Query.OrderQueryCollectionDTO;
 import jpabook.jpashop.Repository.Order.Query.OrderQueryRepository;
 import jpabook.jpashop.Repository.OrderRepository;
 import jpabook.jpashop.Repository.OrderSearch;
+import jpabook.jpashop.Service.Query.OrderQueryService;
+import jpabook.jpashop.Service.Query.OrderQueryServiceCollectionDTO;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
@@ -27,6 +29,7 @@ public class OrderCollectionApiController {
 
     private final OrderRepository orderRepository;
     private final OrderQueryRepository orderQueryRepository;
+    private final OrderQueryService orderQueryService;
 
     /**
      * V1: 엔티티를 그대로 사용
@@ -250,6 +253,7 @@ public class OrderCollectionApiController {
         List<OrderCollectionDTO> orderDTOS = orders.stream()
                 .map(o -> new OrderCollectionDTO(o))
                 .collect(Collectors.toList());
+
         /**
          * Member와 Delivery에서 JOIN FETCH를 했기 때문에 실행되는 쿼리문은 V2보다 줄었습니다.
          * 하지만, 여기서 목적은 Paging도 가능하게 하는 것이기 때문에 OrderItem과 Item을 가져오올때는 JOIN FETCH를 하지 못했습니다.
@@ -282,6 +286,20 @@ public class OrderCollectionApiController {
          *
          * batch_fetch_size를 설정했기 때문에 2번과 3번 쿼리문에서 in()이 처리됩니다
          */
+    }
+
+    /**
+     * V3_2와 같은 로직인데, OSIV OFF 일때도 실행되도록 개발한 API
+     * OSIV ON -> 어디서든 지연 로딩 가능
+     * OSIV OFF -> 트랜젝션 안에서만 지연 로딩이 가능합니다 OR JOIN FETCH 사용
+     */
+    @GetMapping("api/v3_3/collection-orders")
+    private Result ordersV3_3(@RequestParam(value = "offset", defaultValue = "0") int offset,
+                              @RequestParam(value = "limit", defaultValue = "100") int limit) {
+        // /api/v3_2/collection-orders?offset=1&limit=1
+        List<OrderQueryServiceCollectionDTO> orderDTOS = orderQueryService.orderV3_2(offset, limit);
+
+        return new Result(orderDTOS);
     }
 
     @GetMapping("/api/v4/collection-orders")
