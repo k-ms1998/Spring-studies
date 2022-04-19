@@ -4,6 +4,9 @@ import jpabook.jpashop.Domain.Address;
 import jpabook.jpashop.Domain.Order;
 import jpabook.jpashop.Domain.OrderItem;
 import jpabook.jpashop.Domain.OrderStatus;
+import jpabook.jpashop.Repository.Order.Query.OrderFlatDTO;
+import jpabook.jpashop.Repository.Order.Query.OrderQueryCollectionDTO;
+import jpabook.jpashop.Repository.Order.Query.OrderQueryRepository;
 import jpabook.jpashop.Repository.OrderRepository;
 import jpabook.jpashop.Repository.OrderSearch;
 import lombok.AllArgsConstructor;
@@ -23,6 +26,7 @@ import java.util.stream.Collectors;
 public class OrderCollectionApiController {
 
     private final OrderRepository orderRepository;
+    private final OrderQueryRepository orderQueryRepository;
 
     /**
      * V1: 엔티티를 그대로 사용
@@ -280,6 +284,26 @@ public class OrderCollectionApiController {
          */
     }
 
+    @GetMapping("/api/v4/collection-orders")
+    public Result ordersV4() {
+        List<OrderQueryCollectionDTO> orderQueryDtos = orderQueryRepository.findOrderQueryDtos1();
+
+        return new Result(orderQueryDtos);
+    }
+
+    @GetMapping("/api/v6/collection-orders")
+    public Result ordersV5() {
+        List<OrderFlatDTO> orderQueryDtos = orderQueryRepository.findOrderQueryDtos3();
+        /**
+         * orderQueryDtos는 member, delivery, orderItem, item을 모두 JOIN한 쿼리를 반환한 값을 갖고 있습니다
+         * 이럴 경우, 앞서 V2에서 봤던 중복된 값을 갖고 있는 오류가 여전히 존해 합니다.
+         * 오류를 해결하기 위해서 중복을 제거하는 로직을 실행 합니다
+         */
+
+
+        return new Result(orderQueryDtos);
+    }
+
 
     @Data
     static class OrderCollectionDTO {
@@ -289,6 +313,7 @@ public class OrderCollectionApiController {
         private OrderStatus orderStatus;
         private Address address; //배송지
         private List<OrderItemDTO> orderItems;
+
         /**
          * Response를 반환 할때 엔티티 반환 X
          * 그 뜻은, DTO에서도 엔티티 반환 X
