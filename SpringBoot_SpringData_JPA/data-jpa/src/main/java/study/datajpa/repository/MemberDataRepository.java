@@ -1,6 +1,8 @@
 package study.datajpa.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import study.datajpa.entity.Member;
 
 import java.util.List;
@@ -31,5 +33,19 @@ public interface MemberDataRepository extends JpaRepository<Member, Long> {
      * 
      */
     List<Member> findTop2ByUsernameAndAgeGreaterThan(String username, int age);
+
+    /**
+     * @param username
+     * @return
+     * 쿼리 메서드 기능 2 => NamedQuery
+     *
+     * 엔티티에서 정의한 @NamedQuery를 따로 메서드로 구현하지 않고, @Param 에노테이션으로 바로 파라미터 값을 넘겨줘서 쿼리문을 실행
+     * 
+     * @Query 에노테이션 생략 가능
+     * -> SpringData에서 먼저 엔티티+메서드 이름의 @NamedQuery가 있는지 확인 -> Member+findByUsername => Member.findByUsername의 @NamedQuery를 찾음
+     * -> 일치하는 @NamedQuery가 없으면 위에서 봤던 메서드 이름으로 쿼리 생성
+     */
+    @Query(name = "Member.findByUsername")
+    List<Member> findByUsername(@Param("username") String username);
     
 }

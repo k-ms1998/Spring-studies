@@ -73,4 +73,19 @@ class MemberJpaRepositoryTest {
         Assertions.assertThat(findMembers.size()).isEqualTo(2);
     }
 
+    @Test
+    void findByUsernameNamedQuery() {
+        Member memberA = new Member("memberA", 20);
+        Member memberB = new Member("memberB", 26);
+        Member memberC = new Member("memberB", 30);
+
+        memberJpaRepository.save(memberA);
+        memberJpaRepository.save(memberB);
+        memberJpaRepository.save(memberC);
+
+
+        List<Member> findMembers = memberJpaRepository.findByUsername("memberB");
+        Assertions.assertThat(findMembers.size()).isEqualTo(2);
+    }
+
 }
