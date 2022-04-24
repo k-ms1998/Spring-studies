@@ -94,4 +94,19 @@ class MemberDataRepositoryTest {
         List<Member> findMembers = memberDataRepository.findByUsername("memberB");
         Assertions.assertThat(findMembers.size()).isEqualTo(2);
     }
+
+    @Test
+    void findByUsernameQuery() {
+        Member memberA = new Member("memberA", 20);
+        Member memberB = new Member("memberB", 26);
+        Member memberC = new Member("memberB", 30);
+
+        memberDataRepository.save(memberA);
+        memberDataRepository.save(memberB);
+        memberDataRepository.save(memberC);
+
+
+        List<Member> findMembers = memberDataRepository.findUser("memberB", 20);
+        Assertions.assertThat(findMembers.size()).isEqualTo(2);
+    }
 }

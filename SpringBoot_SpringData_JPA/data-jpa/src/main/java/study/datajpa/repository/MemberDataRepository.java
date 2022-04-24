@@ -47,5 +47,21 @@ public interface MemberDataRepository extends JpaRepository<Member, Long> {
      */
     @Query(name = "Member.findByUsername")
     List<Member> findByUsername(@Param("username") String username);
+
+    /**
+     * 
+     * @param username
+     * @param age
+     * @return
+     * 
+     * 쿼리 메서드 기능 2 => @Query로 바로 쿼리 문 작성하기
+     * 실무에서 가장 많이 사용되는 방법
+     * 
+     * @Param 애노테이션을 쿼리의 파라미터 값들을 바로 주입해줘서 쿼리가 실행 됩니다
+     * @NamedQuery의 모든 장점들을 갖고 있지만 사용하기 더 단순
+     * 메서드 이름으로 쿼리가 작성 되는 방식보다 더 복잡한 쿼리들을 쉽게 작성 할 수 있음(메서드 이름으로 쿼리가 생성 되는 방식은 파라미터 값들이 많아지면 복잡해짐)
+     */
+    @Query("select m from Member m where m.username = :username and m.age > :age")
+    List<Member> findUser(@Param("username") String username, @Param("age") int age);
     
 }
