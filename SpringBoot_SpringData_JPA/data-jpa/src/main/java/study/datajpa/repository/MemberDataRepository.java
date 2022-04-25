@@ -1,5 +1,9 @@
 package study.datajpa.repository;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -74,5 +78,13 @@ public interface MemberDataRepository extends JpaRepository<Member, Long> {
 
     @Query("select m from Member m where m.username in :usernames")
     List<Member> findByNames(@Param("usernames") Collection<String> usernames);
+
+    /**
+     * 메서드 이름으로 쿼리 생성
+     * Pageable에 쿼리에 대한 페이징 조건이 들어감
+     */
+    Page<Member> findByAge(int age, Pageable pageable);
+
+    Slice<Member> findSliceByAge(int age, Pageable pageable);
     
 }
