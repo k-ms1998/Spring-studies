@@ -5,6 +5,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import study.datajpa.entity.Member;
@@ -86,5 +87,17 @@ public interface MemberDataRepository extends JpaRepository<Member, Long> {
     Page<Member> findByAge(int age, Pageable pageable);
 
     Slice<Member> findSliceByAge(int age, Pageable pageable);
-    
+
+    /**
+     * 하나의 데이터만 변경 했을때는 Dirty Checking에 의해서 값이 변경됨을 감지하고 DB와 영속성 컨텍스트를 모두 참고 했었습니다.
+     * 그러나, 벌크 수정/삭제를 할때는 영속성 컨텍스트를 무시하고 바로 DB에 접근해서 값들을 변경 합니다.
+     * 그렇기 때문에, 수정할 데이터가 영속성 컨텍스트에 있을때 벌크 연산을 하면, 해당 데이터가 DB에서의 값과 영속성 컨텍스트에서의 값이 불일치 합니다
+     * 그러므로, @Modifying 애노테이션에 clearAutomatically = true로 설정해서 벌크 연산 이후에 영속성 컨텍스트를 초기화 시켜줍니다 => 쿼리 실행 후 자동으로 영속성 컨텍스트 초기화 시켜줌
+     * @param age
+     * @return
+     */
+    @Modifying(clearAutomatically = true) // == executeUpdate(); 벌크성 수정 & 삭제 쿼리는 해당 애노테이션이 없으면 오류 발생
+    @Query("update Member m set m.age = m.age + 1 where m.age >= :age")
+    int bulkAgePlus(@Param("age") int age);
+
 }

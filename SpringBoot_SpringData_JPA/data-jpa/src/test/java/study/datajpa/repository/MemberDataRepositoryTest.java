@@ -322,4 +322,25 @@ class MemberDataRepositoryTest {
 
 
     }
+
+    @Test
+    void bulkUpdate() {
+
+        //given
+        memberDataRepository.save(new Member("member0", 10));
+        memberDataRepository.save(new Member("member1", 19));
+        memberDataRepository.save(new Member("member2", 20));
+        memberDataRepository.save(new Member("member3", 21));
+        memberDataRepository.save(new Member("member4", 40));
+
+        //when
+        int resultCount = memberDataRepository.bulkAgePlus(20);
+
+        List<Member> member4 = memberDataRepository.findByUsername("member4");
+        System.out.println("member4.age = " + member4.get(0).getAge());
+        
+        Assertions.assertThat(resultCount).isEqualTo(3);
+
+
+    }
 }
