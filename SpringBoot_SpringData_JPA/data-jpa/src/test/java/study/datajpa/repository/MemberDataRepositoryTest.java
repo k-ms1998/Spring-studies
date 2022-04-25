@@ -20,6 +20,7 @@ import javax.persistence.PersistenceContext;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
@@ -393,5 +394,31 @@ class MemberDataRepositoryTest {
         for (Member member : memberEntityGraph) {
             System.out.println("member = " + member + " | member.getTeam().getName() = " + member.getTeam().getName());
         }
+    }
+
+    @Test
+    void queryHint() {
+
+        //given
+        Member memberA = new Member("MemberA", 10);
+        memberDataRepository.save(memberA);
+
+        em.flush();
+        em.clear();
+
+        //when
+        Member findMember = memberDataRepository.findReadOnlyByUsername(memberA.getUsername());
+        // @HintQuery로 해당 메서드가 readOnly인것을 알려주지 않으면, 기본적으로 엔티티를 가져올떄 영속성 컨텍스트에 두개의 스냅샷/객체가 발생합니다
+        // 그리므로, 값을 변경하지 않아도 되는 경우에 불필요한 비용이 발생합니다
+        // 이러한 비용을 최소화 할 수 있는 방법이 @HintQuery를 사용하는 것
+
+        findMember.changeUsername("MemberB");
+        //flush() -> Dirty Checking에 의한 변경 감지 확인-> 데이터 변경
+        //But, readOnly일때는 flush()를 하더라도 Dirty Checking X -> 비용이 들지 않음
+        //(실제로 아래 flush()에서 Update 쿼리가 실행이 되지 않는 것을 확인 할 수 있음)
+
+        em.flush();
+        em.clear();
+
     }
 }
