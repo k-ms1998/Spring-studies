@@ -1,13 +1,17 @@
 package study.datajpa.repository;
 
 import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
 import study.datajpa.entity.Member;
+import study.datajpa.entity.Team;
+import study.datajpa.repository.dto.MemberDTO;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -25,6 +29,14 @@ class MemberDataRepositoryTest {
      */
     @Autowired
     private MemberDataRepository memberDataRepository;
+
+    @Autowired
+    private TeamDataRepository teamDataRepository;
+
+    @AfterEach
+    public void init() {
+        memberDataRepository.deleteAll();
+    }
 
     @Test
     void testMember() {
@@ -107,6 +119,75 @@ class MemberDataRepositoryTest {
 
 
         List<Member> findMembers = memberDataRepository.findUser("memberB", 20);
+        Assertions.assertThat(findMembers.size()).isEqualTo(2);
+    }
+
+    @Test
+    void findUsernameList() {
+        Member memberA = new Member("memberA", 20);
+        Member memberB = new Member("memberB", 26);
+        Member memberC = new Member("memberB", 30);
+
+        memberDataRepository.save(memberA);
+        memberDataRepository.save(memberB);
+        memberDataRepository.save(memberC);
+
+
+        List<String> findMembers = memberDataRepository.findUsernameList();
+        findMembers.stream()
+                .forEach(m -> {
+                    System.out.println("m = " + m);
+                });
+        Assertions.assertThat(findMembers.size()).isEqualTo(3);
+    }
+
+    @Test
+    void findUsernameAgeTeamnameList() {
+        Team teamA = new Team("TeamA");
+        Team teamB = new Team("TeamB");
+
+        teamDataRepository.save(teamA);
+        teamDataRepository.save(teamB);
+
+
+        Member memberA = new Member("memberA", 20, teamA);
+        Member memberB = new Member("memberB", 26, teamB);
+        Member memberC = new Member("memberB", 30, teamB);
+
+        memberDataRepository.save(memberA);
+        memberDataRepository.save(memberB);
+        memberDataRepository.save(memberC);
+
+
+        List<MemberDTO> findMembers = memberDataRepository.findUsernameAgeTeamnameList();
+        findMembers.stream()
+                .forEach(m -> {
+                    System.out.println("m.getUsername() = " + m.getUsername() +
+                            " | m.getAge = " + m.getAge() +
+                            " | m.getTeam = " + m.getTeamName());
+                });
+        Assertions.assertThat(findMembers.size()).isEqualTo(3);
+    }
+
+    @Test
+    void findByNames() {
+        Member memberA = new Member("memberA", 20);
+        Member memberB = new Member("memberB", 26);
+        Member memberC = new Member("memberC", 30);
+
+        memberDataRepository.save(memberA);
+        memberDataRepository.save(memberB);
+        memberDataRepository.save(memberC);
+
+        List<String> usernames = new ArrayList<>();
+        usernames.add("memberA");
+        usernames.add("memberB");
+
+        List<Member> findMembers = memberDataRepository.findByNames(usernames);
+        findMembers.stream()
+                .forEach(m -> {
+                    System.out.println("m = " + m);
+                });
         Assertions.assertThat(findMembers.size()).isEqualTo(2);
     }
 }

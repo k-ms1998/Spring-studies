@@ -4,7 +4,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import study.datajpa.entity.Member;
+import study.datajpa.repository.dto.MemberDTO;
 
+import java.util.Collection;
 import java.util.List;
 
 public interface MemberDataRepository extends JpaRepository<Member, Long> {
@@ -63,5 +65,14 @@ public interface MemberDataRepository extends JpaRepository<Member, Long> {
      */
     @Query("select m from Member m where m.username = :username and m.age > :age")
     List<Member> findUser(@Param("username") String username, @Param("age") int age);
+
+    @Query("select m.username from Member m")
+    List<String> findUsernameList(); //Member들의 username만 반환하기
+
+    @Query("select new study.datajpa.repository.dto.MemberDTO(m.username, m.age, m.team) from Member m")
+    List<MemberDTO> findUsernameAgeTeamnameList(); //Member들의 username만 반환하기
+
+    @Query("select m from Member m where m.username in :usernames")
+    List<Member> findByNames(@Param("usernames") Collection<String> usernames);
     
 }
