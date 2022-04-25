@@ -15,6 +15,8 @@ import study.datajpa.entity.Member;
 import study.datajpa.entity.Team;
 import study.datajpa.repository.dto.MemberDTO;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -37,6 +39,9 @@ class MemberDataRepositoryTest {
 
     @Autowired
     private TeamDataRepository teamDataRepository;
+
+    @PersistenceContext
+    private EntityManager em;
 
     @AfterEach
     public void init() {
@@ -342,5 +347,51 @@ class MemberDataRepositoryTest {
         Assertions.assertThat(resultCount).isEqualTo(3);
 
 
+    }
+
+    @Test
+    void entityGraph1() {
+        Team teamA = new Team("TeamA");
+        teamDataRepository.save(teamA);
+
+        Team teamB = new Team("TeamB");
+        teamDataRepository.save(teamB);
+
+        Member memberA = new Member("MemberA", 25, teamA);
+        Member memberB = new Member("MemberB", 35, teamB);
+        memberDataRepository.save(memberA);
+        memberDataRepository.save(memberB);
+
+        em.flush();
+        em.clear();
+
+        List<Member> memberEntityGraph = memberDataRepository.findMemberEntityGraph();
+        for (Member member : memberEntityGraph) {
+            System.out.println("member = " + member + " | member.getTeam().getName() = " + member.getTeam().getName());
+        }
+    }
+
+    @Test
+    void entityGraph2() {
+        Team teamA = new Team("TeamA");
+        teamDataRepository.save(teamA);
+
+        Team teamB = new Team("TeamB");
+        teamDataRepository.save(teamB);
+
+        Member memberA = new Member("MemberA", 25, teamA);
+        Member memberB = new Member("MemberB", 35, teamB);
+        Member memberC = new Member("MemberB", 45, teamB);
+        memberDataRepository.save(memberA);
+        memberDataRepository.save(memberB);
+        memberDataRepository.save(memberC);
+
+        em.flush();
+        em.clear();
+
+        List<Member> memberEntityGraph = memberDataRepository.findEntityGraphByUsername("MemberB");
+        for (Member member : memberEntityGraph) {
+            System.out.println("member = " + member + " | member.getTeam().getName() = " + member.getTeam().getName());
+        }
     }
 }

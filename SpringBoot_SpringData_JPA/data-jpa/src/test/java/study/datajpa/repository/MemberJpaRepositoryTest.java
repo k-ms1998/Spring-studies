@@ -6,7 +6,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 import study.datajpa.entity.Member;
+import study.datajpa.entity.Team;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.Table;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -19,6 +23,12 @@ class MemberJpaRepositoryTest {
 
     @Autowired
     private MemberJpaRepository memberJpaRepository;
+
+    @Autowired
+    private TeamJpaRepository teamJpaRepository;
+
+    @PersistenceContext
+    private EntityManager em;
 
     @Test
     void save_find() {
@@ -102,6 +112,43 @@ class MemberJpaRepositoryTest {
         int resultCount = memberJpaRepository.bulkAgePlus(20);
 
         Assertions.assertThat(resultCount).isEqualTo(3);
+
+    }
+
+    @Test
+    void leftJoinAndLeftJoinFetch() {
+        Team teamA = new Team("TeamA");
+        teamJpaRepository.save(teamA);
+
+        Team teamB = new Team("TeamB");
+        teamJpaRepository.save(teamB);
+
+        Member memberA = new Member("MemberA", 25, teamA);
+        Member memberB = new Member("MemberB", 35, teamB);
+
+        memberJpaRepository.save(memberA);
+        memberJpaRepository.save(memberB);
+
+        em.flush();
+        em.clear();
+
+        //N + 1 문제 발생
+        List<Member> members = em.createQuery("select m from Member m left join m.team t", Member.class)
+                .getResultList();
+        for (Member m : members) {
+            System.out.println("m = " + m + " | m.getTeam().getName() = " + m.getTeam().getName());
+        }
+
+        em.flush();
+        em.clear();
+        System.out.println("==================================================================");
+
+        //N + 1 문제 해결
+        List<Member> membersFetch = em.createQuery("select m from Member m left join fetch m.team t", Member.class)
+                .getResultList();
+        for (Member m : membersFetch) {
+            System.out.println("m = " + m + " | m.getTeam().getName() = " + m.getTeam().getName());
+        }
 
     }
 }
