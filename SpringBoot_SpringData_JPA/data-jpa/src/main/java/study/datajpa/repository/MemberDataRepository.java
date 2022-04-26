@@ -114,4 +114,7 @@ public interface MemberDataRepository extends JpaRepository<Member, Long>, Membe
 
     @QueryHints(value = @QueryHint(name = "org.hibernate.readOnly", value = "true"))
     Member findReadOnlyByUsername(String username);
+
+    @EntityGraph(attributePaths = {"team"})
+    Page<Member> findControllerBy(Pageable pageable);
 }
