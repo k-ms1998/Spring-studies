@@ -7,13 +7,15 @@ import org.springframework.data.domain.Slice;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
 import study.datajpa.entity.Member;
+import study.datajpa.repository.custom.MemberDataRepositoryCustom;
+import study.datajpa.repository.custom.MemberDataRepositoryImpl;
 import study.datajpa.repository.dto.MemberDTO;
 
 import javax.persistence.QueryHint;
 import java.util.Collection;
 import java.util.List;
 
-public interface MemberDataRepository extends JpaRepository<Member, Long> {
+public interface MemberDataRepository extends JpaRepository<Member, Long>, MemberDataRepositoryCustom {
 //   JpaRepository<Entity, Entity PK Type>
 //  @Repository 애노테이션이 없어도 자동으로 JpaRepository를 상속 받으면 Component 스캔이 됨
 

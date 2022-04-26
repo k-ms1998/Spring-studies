@@ -421,4 +421,18 @@ class MemberDataRepositoryTest {
         em.clear();
 
     }
+
+    @Test
+    void customCall() {
+        Member memberA = new Member("MemberA", 25);
+        Member memberB = new Member("MemberB", 35);
+        Member memberC = new Member("MemberB", 45);
+
+        memberDataRepository.save(memberA);
+        memberDataRepository.save(memberB);
+        memberDataRepository.save(memberC);
+
+        List<Member> members = memberDataRepository.findMemberCustom();
+        Assertions.assertThat(members.size()).isEqualTo(3);
+    }
 }
