@@ -16,9 +16,6 @@ public class Item extends DataBaseTimeEntity implements Persistable<String>{
     @Id
     private String id;
 
-    @CreatedDate
-    LocalDateTime createdDate;
-
     protected Item() {
     }
 

@@ -19,9 +19,9 @@ public class DataBaseTimeEntity {
 
     @CreatedDate
     @Column(updatable = false) //해당 값을 한번 생성하면 변할수 없도록 해줌
-    private LocalDateTime createdDate;
+    protected LocalDateTime createdDate;
 
     @LastModifiedDate
-    private LocalDateTime lastModifiedDate;
+    protected LocalDateTime lastModifiedDate;
 
 }
