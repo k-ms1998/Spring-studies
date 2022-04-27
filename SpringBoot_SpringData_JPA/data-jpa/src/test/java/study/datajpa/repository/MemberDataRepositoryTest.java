@@ -14,6 +14,8 @@ import org.springframework.transaction.annotation.Transactional;
 import study.datajpa.entity.Member;
 import study.datajpa.entity.Team;
 import study.datajpa.repository.dto.MemberDTO;
+import study.datajpa.repository.dto.UsernameAndAgeDTO;
+import study.datajpa.repository.dto.UsernameOnlyDTO;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -435,4 +437,57 @@ class MemberDataRepositoryTest {
         List<Member> members = memberDataRepository.findMemberCustom();
         Assertions.assertThat(members.size()).isEqualTo(3);
     }
+
+    @Test
+    void projections() {
+
+        //given
+        Team teamA = new Team("TeamA");
+        teamDataRepository.save(teamA);
+
+        Member memberA = new Member("MemberA", 25, teamA);
+        Member memberB = new Member("MemberB", 35, teamA);
+        Member memberC = new Member("MemberB", 45, teamA);
+        memberDataRepository.save(memberA);
+        memberDataRepository.save(memberB);
+        memberDataRepository.save(memberC);
+
+
+        //when
+        /**
+         * select
+         *         member0_.username as col_0_0_
+         *     from
+         *         member member0_
+         *     where
+         *         member0_.username='MemberB'
+         */
+        List<UsernameOnly> members = memberDataRepository.findProjectionByUsername("MemberB");
+        List<UsernameOnlyDTO> membersDTO = memberDataRepository.findProjectionDTOByUsername("MemberB");
+        /**
+         * select
+         *         member0_.username as col_0_0_,
+         *         member0_.age as col_1_0_
+         *     from
+         *         member member0_
+         *     where
+         *         member0_.username='MemberB'
+         *         and member0_.age=35
+         */
+        List<UsernameAndAgeDTO> membersGeneric = memberDataRepository.findProjectionGenericByUsernameAndAge("MemberB", 35, UsernameAndAgeDTO.class);
+        System.out.println("===========================================");
+        for (UsernameOnly username : members) {
+            System.out.println("username = " + username.getUsername());
+        }
+        System.out.println("===========================================");
+        for (UsernameOnlyDTO username : membersDTO) {
+            System.out.println("username = " + username.getUsername());
+        }
+        System.out.println("===========================================");
+        for (UsernameAndAgeDTO username : membersGeneric) {
+            System.out.println("username = " + username.getUsername() + " | age = " + username.getAge());
+        }
+
+    }
+
 }

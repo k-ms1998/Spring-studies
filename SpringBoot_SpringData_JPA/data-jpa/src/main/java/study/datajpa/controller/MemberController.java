@@ -24,23 +24,23 @@ public class MemberController {
     private final MemberDataRepository memberRepository;
     private final TeamDataRepository teamDataRepository;
 
-    @PostConstruct
-    public void init() {
-        Team teamA = new Team("TeamA");
-        Team teamB = new Team("TeamB");
-        teamDataRepository.save(teamA);
-        teamDataRepository.save(teamB);
-
-        for (int i = 0; i < 100; i++) {
-            Member member = null;
-            if (i % 2 == 0) {
-                member = new Member("Member" + i, i % 25 + 20, teamA);
-            } else {
-                member = new Member("Member" + i, i % 25 + 20, teamB);
-            }
-            memberRepository.save(member);
-        }
-    }
+//    @PostConstruct
+//    public void init() {
+//        Team teamA = new Team("TeamA");
+//        Team teamB = new Team("TeamB");
+//        teamDataRepository.save(teamA);
+//        teamDataRepository.save(teamB);
+//
+//        for (int i = 0; i < 100; i++) {
+//            Member member = null;
+//            if (i % 2 == 0) {
+//                member = new Member("Member" + i, i % 25 + 20, teamA);
+//            } else {
+//                member = new Member("Member" + i, i % 25 + 20, teamB);
+//            }
+//            memberRepository.save(member);
+//        }
+//    }
 
     @GetMapping("/members/{id}")
     public String findMember(@PathVariable("id") Long id) {

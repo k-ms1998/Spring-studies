@@ -10,6 +10,7 @@ import study.datajpa.entity.Member;
 import study.datajpa.repository.custom.MemberDataRepositoryCustom;
 import study.datajpa.repository.custom.MemberDataRepositoryImpl;
 import study.datajpa.repository.dto.MemberDTO;
+import study.datajpa.repository.dto.UsernameOnlyDTO;
 
 import javax.persistence.QueryHint;
 import java.util.Collection;
@@ -117,4 +118,10 @@ public interface MemberDataRepository extends JpaRepository<Member, Long>, Membe
 
     @EntityGraph(attributePaths = {"team"})
     Page<Member> findControllerBy(Pageable pageable);
+
+    List<UsernameOnly> findProjectionByUsername(String username);
+
+    List<UsernameOnlyDTO> findProjectionDTOByUsername(String username);
+
+    <T> List<T> findProjectionGenericByUsernameAndAge(String username, int age, Class<T> type);
 }
