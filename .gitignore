@@ -2,3 +2,6 @@ class_notes/
 http_basics/
 UploadFiles_src/
 Spring_MVC2/UploadedFiles/
+QueryDSL_SpringData_JPA/build/
+QueryDSL_SpringData_JPA/gradle/
+QueryDSL_SpringData_JPA/src/main/java/study/querydsl/tmp/
