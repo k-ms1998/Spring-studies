@@ -11,6 +11,7 @@ import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
+import java.util.List;
 
 @SpringBootTest
 @Transactional
@@ -24,15 +25,13 @@ public class QueryDslBasicTest {
     @BeforeEach
     public void before() {
         Team teamA = new Team("TeamA");
-        Team teamB = new Team("TeamB");
 
         em.persist(teamA);
-        em.persist(teamB);
         
         Member memberA = new Member("MemberA", 25, teamA);
-        Member memberB = new Member("MemberB", 35, teamB);
+        Member memberB = new Member("MemberB", 35, teamA);
         Member memberC = new Member("MemberC", 45, teamA);
-        Member memberD = new Member("MemberD", 55, teamB);
+        Member memberD = new Member("MemberD", 55, teamA);
 
         em.persist(memberA);
         em.persist(memberB);
@@ -69,5 +68,38 @@ public class QueryDslBasicTest {
         Assertions.assertThat(findMemberA.getUsername()).isEqualTo("MemberA");
 
     }
-    
+
+    @Test
+    void queryDslProjectionBasic() {
+        factory = new JPAQueryFactory(em);
+        QMember member = QMember.member;
+        QTeam team = QTeam.team;
+
+
+        //fetch() -> 리스트 반환; 데이터가 없으면 Empty List 반환
+        List<Member> membersFetch = factory
+                .selectFrom(member)
+                .fetch();
+
+        //fetchOne() -> 단건 조회: 결과가 없으면 == null, 결과가 2개 이상 == NonUniqueResultException
+        Team teamFetchOne = factory
+                .selectFrom(team)
+                .fetchOne();
+
+        //fetchOne() -> limit(1).fetchOne()
+        Member membersFetchFirst = factory
+                .selectFrom(member)
+                .fetchFirst();
+
+        //fetchResult() && fetchCount() deprecated -> solution
+        Long memberCount = factory
+                .select(member.count())
+                .from(member)
+                .fetchOne();
+
+        Assertions.assertThat(membersFetch.size()).isEqualTo(4);
+        Assertions.assertThat(teamFetchOne.getName()).isEqualTo("TeamA");
+        Assertions.assertThat(membersFetchFirst).isInstanceOf(Member.class);
+        Assertions.assertThat(memberCount).isEqualTo(4);
+    }
 }
