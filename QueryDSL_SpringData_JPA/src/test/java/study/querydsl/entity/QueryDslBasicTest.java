@@ -129,4 +129,22 @@ public class QueryDslBasicTest {
 
     }
 
+    @Test
+    void queryDslPaging() {
+        factory = new JPAQueryFactory(em);
+        QMember member = QMember.member;
+
+        List<Member> members = factory.selectFrom(member)
+                .orderBy(member.age.desc())
+                .offset(1)
+                .limit(2)
+                .fetch();
+
+        for (Member m : members) {
+            System.out.println("m = " + m);
+        }
+        Assertions.assertThat(members.size()).isEqualTo(2);
+        Assertions.assertThat(members.get(0).getUsername()).isEqualTo("MemberC");
+    }
+
 }
