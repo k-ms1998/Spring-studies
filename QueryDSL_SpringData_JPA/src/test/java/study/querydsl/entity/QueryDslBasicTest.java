@@ -102,4 +102,31 @@ public class QueryDslBasicTest {
         Assertions.assertThat(membersFetchFirst).isInstanceOf(Member.class);
         Assertions.assertThat(memberCount).isEqualTo(4);
     }
+
+    @Test
+    void queryDslOrderBy() {
+        /**
+         * 회원 정렬 순서:
+         * 1. 회원 나이 내림차순 DESC
+         * 2. 회원 이름 오름차순 ASC
+         * => select *from member order by age desc, username asc;
+         */
+        em.persist(new Member("MemberE", 35));
+        em.persist(new Member(null, 35));
+
+        factory = new JPAQueryFactory(em);
+        QMember member = QMember.member;
+
+        List<Member> members = factory
+                .select(member)
+                .from(member)
+                .orderBy(member.age.desc(), member.username.asc().nullsLast()) // nullsLast() -> null일 경우 마지막 순서로 가져옴; nullsFirst() -> null일 경우 처음으로 가져옴
+                .fetch();
+        for (Member m : members) {
+            System.out.println("m = " + m);
+        }
+
+
+    }
+
 }
