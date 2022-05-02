@@ -1,5 +1,6 @@
 package study.querydsl.entity;
 
+import com.querydsl.core.Tuple;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.assertj.core.api.Assertions;
@@ -15,6 +16,7 @@ import java.util.List;
 
 @SpringBootTest
 @Transactional
+@Rollback(false)
 public class QueryDslBasicTest {
 
     @Autowired
@@ -25,13 +27,15 @@ public class QueryDslBasicTest {
     @BeforeEach
     public void before() {
         Team teamA = new Team("TeamA");
+        Team teamB = new Team("TeamB");
 
         em.persist(teamA);
-        
+        em.persist(teamB);
+
         Member memberA = new Member("MemberA", 25, teamA);
         Member memberB = new Member("MemberB", 35, teamA);
         Member memberC = new Member("MemberC", 45, teamA);
-        Member memberD = new Member("MemberD", 55, teamA);
+        Member memberD = new Member("MemberD", 55, teamB);
 
         em.persist(memberA);
         em.persist(memberB);
@@ -145,6 +149,58 @@ public class QueryDslBasicTest {
         }
         Assertions.assertThat(members.size()).isEqualTo(2);
         Assertions.assertThat(members.get(0).getUsername()).isEqualTo("MemberC");
+    }
+
+    @Test
+    void aggregation() {
+        factory = new JPAQueryFactory(em);
+        QMember member = QMember.member;
+
+        List<Tuple> result = factory.select(
+                        member.count(),
+                        member.age.sum(),
+                        member.age.avg(),
+                        member.age.max(),
+                        member.age.min()
+                ).from(member)
+                .fetch(); // 어차피 반환되는 튜플은 하나이므로, fetchOne() || fetchFirst() 를 사용해도 무관
+        //반환되는 Column의 값들이 타입이 다양하기 때문에 Tuple 로 반환; 실무에서는 DTO로 바로 반환
+        
+        Tuple tuple = result.get(0);
+
+        System.out.println("tuple = " + tuple); //tuple = [4, 160, 40.0, 55, 25]
+
+        Assertions.assertThat(tuple.get(member.count())).isEqualTo(4);
+        Assertions.assertThat(tuple.get(member.age.sum())).isEqualTo(160);
+        Assertions.assertThat(tuple.get(member.age.avg())).isEqualTo(40);
+        Assertions.assertThat(tuple.get(member.age.max())).isEqualTo(55);
+        Assertions.assertThat(tuple.get(member.age.min())).isEqualTo(25);
+
+
+    }
+
+    @Test
+    void groupBy() {
+        factory = new JPAQueryFactory(em);
+        QTeam team = QTeam.team;
+        QMember member = QMember.member;
+
+        List<Tuple> result = factory.select(team.name, member.age.avg(), member.count())
+                .from(member)
+                .join(member.team, team) // member LEFT JOIN team
+                .groupBy(team.name)
+                .fetch();
+        for (Tuple tuple : result) {
+            System.out.println("tuple = " + tuple);
+        }
+
+        Tuple tupleA = result.get(0); //tuple = [TeamA, 35.0, 3]
+        Tuple tupleB = result.get(1); //tuple = [TeamB, 55.0, 1]
+
+        Assertions.assertThat(result.size()).isEqualTo(2);
+        Assertions.assertThat(tupleA.get(member.age.avg())).isEqualTo(35);
+        Assertions.assertThat(tupleB.get(member.age.avg())).isEqualTo(55);
+
     }
 
 }
