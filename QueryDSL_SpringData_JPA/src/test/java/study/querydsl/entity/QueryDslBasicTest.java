@@ -12,6 +12,9 @@ import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.PersistenceContext;
+import javax.persistence.PersistenceUnit;
 import java.util.List;
 
 @SpringBootTest
@@ -345,4 +348,84 @@ public class QueryDslBasicTest {
 
     }
 
+    @PersistenceUnit
+    EntityManagerFactory emf;
+
+    @Test
+    void fetchJoinNo() {
+        factory = new JPAQueryFactory(em);
+        QMember member = QMember.member;
+
+        em.flush();
+        em.clear();
+
+        Member findMember = factory
+                .selectFrom(member)
+                .fetchFirst();
+
+        boolean isLoaded = emf.getPersistenceUnitUtil().isLoaded(findMember.getTeam()); //로딩이 된 엔티티인지 아닌지 알려줌
+        Assertions.assertThat(isLoaded).isFalse();
+    }
+
+    @Test
+    void fetchJoinYes() {
+        factory = new JPAQueryFactory(em);
+        QMember member = QMember.member;
+        QTeam team = QTeam.team;
+
+        em.flush();
+        em.clear();
+
+        Member findMember = factory
+                .selectFrom(member)
+                .join(member.team, team).fetchJoin()
+                .fetchFirst();
+
+        boolean isLoaded = emf.getPersistenceUnitUtil().isLoaded(findMember.getTeam()); //로딩이 된 엔티티인지 아닌지 알려줌
+        Assertions.assertThat(isLoaded).isTrue();
+    }
+
+    @Test
+    void joinAndFetchJoin() {
+        factory = new JPAQueryFactory(em);
+        QMember member = QMember.member;
+        QTeam team = QTeam.team;
+
+        em.flush();
+        em.clear();
+        System.out.println("==========================================================");
+
+        Member findMemberFetchJoin = factory
+                .selectFrom(member)
+                .join(member.team, team).fetchJoin()
+                .fetchFirst();
+        Team fetchJoinTeam = findMemberFetchJoin.getTeam();
+        System.out.println("fetchJoinTeam = " + fetchJoinTeam);
+
+        em.flush();
+        em.clear();
+        System.out.println("==========================================================");
+
+        Member findMemberJoinA = factory
+                .select(member)
+                .from(member)
+                .join(member.team, team)
+                .fetchFirst();
+        Team findTeamA = findMemberJoinA.getTeam();
+        System.out.println("findTeamA = " + findTeamA);
+
+        em.flush();
+        em.clear();
+        System.out.println("==========================================================");
+
+        Tuple findMemberJoinB = factory
+                .select(member, team)
+                .from(member)
+                .join(member.team, team)
+                .fetchFirst();
+        Team findTeamB = findMemberJoinB.get(1, Team.class);
+        System.out.println("findTeamB = " + findTeamB);
+
+
+    }
 }
