@@ -509,7 +509,6 @@ public class QueryDslBasicTest {
         }
 
 
-//        Assertions.assertThat(result).extracting("age")
-//                .containsExactly(45, 55);
+        Assertions.assertThat(result.get(0).get(1, Double.class)).isEqualTo(40);
     }
 }
