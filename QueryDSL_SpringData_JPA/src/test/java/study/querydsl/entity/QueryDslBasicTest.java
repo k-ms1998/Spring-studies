@@ -517,6 +517,16 @@ public class QueryDslBasicTest {
         factory = new JPAQueryFactory(em);
         QMember member = QMember.member;
 
+        /**
+         * select
+         * case
+         * when member0_.age between 20 and 29 then '20대'
+         * when member0_.age between 30 and 39 then '30대'
+         * when member0_.age between 40 and 49 then '40대'
+         * else '50대 이상'
+         * end as col_0_0_
+         * from member member0_;
+         */
         List<String> result = factory
                 .select(member.age
                         .when(25).then("25살")
@@ -574,6 +584,17 @@ public class QueryDslBasicTest {
                 .when(member.age.between(40, 49)).then(1)
                 .otherwise(4);
 
+        /**
+         * select member0_.username as col_0_0_, member0_.age as col_1_0_, case when member0_.age between 20 and 29 then 3 when member0_.age between 30 and 39 then 2 when member0_.age between 40 and 49 then 1 else 4 end as col_2_0_
+         * from member member0_
+         * order by
+         * case
+         *  when member0_.age between 20 and 29 then 3
+         *  when member0_.age between 30 and 39 then 2
+         *  when member0_.age between 40 and 49 then
+         * 1 else 4
+         * end desc;
+         */
         List<Tuple> result = factory
                 .select(member.username, member.age, rankPath)
                 .from(member)
