@@ -611,4 +611,20 @@ public class QueryDslBasicTest {
 //        s = [MemberE, 49, 1]
     }
 
+    @Test
+    void concat() {
+        factory = new JPAQueryFactory(em);
+        QMember member = QMember.member;
+
+        //{username}_{age}
+        List<String> result = factory
+                .select(member.username.concat("_").concat(member.age.stringValue())) //같은 타입만 concat 가능 -> stringValue()로 int -> String 변환; ENUM -> String 도 가능
+                .from(member)
+                .fetch();
+        for (String s : result) {
+            System.out.println("s = " + s);
+        }
+
+    }
+
 }
