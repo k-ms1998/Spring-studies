@@ -1,8 +1,9 @@
 package study.querydsl.entity;
 
 import com.querydsl.core.Tuple;
+import com.querydsl.core.types.dsl.CaseBuilder;
+import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.JPAExpressions;
-import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -14,7 +15,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
-import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceUnit;
 import java.util.List;
 
@@ -511,4 +511,83 @@ public class QueryDslBasicTest {
 
         Assertions.assertThat(result.get(0).get(1, Double.class)).isEqualTo(40);
     }
+
+    @Test
+    void basicCase() {
+        factory = new JPAQueryFactory(em);
+        QMember member = QMember.member;
+
+        List<String> result = factory
+                .select(member.age
+                        .when(25).then("25살")
+                        .when(35).then("35살")
+                        .when(45).then("45살")
+                        .otherwise("46살 이상"))
+                .from(member)
+                .fetch();
+
+        for (String s : result) {
+            System.out.println("s = " + s);
+        }
+//        s = 25살
+//        s = 35살
+//        s = 45살
+//        s = 46살 이상
+
+    }
+
+    @Test
+    void complexCase() {
+        Member memberE = new Member("MemberE", 49, null);
+        em.persist(memberE);
+
+        factory = new JPAQueryFactory(em);
+        QMember member = QMember.member;
+
+
+        List<String> result = factory
+                .select(new CaseBuilder()
+                        .when(member.age.between(20, 29)).then("20대") //20 <= age <= 29
+                        .when(member.age.between(30, 39)).then("30대")
+                        .when(member.age.between(40, 49)).then("40대")
+                        .otherwise("50대 이상"))
+                .from(member)
+                .fetch();
+
+        for (String s : result) {
+            System.out.println("s = " + s);
+        }
+    }
+
+    @Test
+    void complexCaseOrderBy() {
+        Member memberE = new Member("MemberE", 49, null);
+        em.persist(memberE);
+
+        factory = new JPAQueryFactory(em);
+        QMember member = QMember.member;
+
+
+        NumberExpression<Integer> rankPath = new CaseBuilder()
+                .when(member.age.between(20, 29)).then(3)
+                .when(member.age.between(30, 39)).then(2)
+                .when(member.age.between(40, 49)).then(1)
+                .otherwise(4);
+
+        List<Tuple> result = factory
+                .select(member.username, member.age, rankPath)
+                .from(member)
+                .orderBy(rankPath.desc()) // otherwise-> (20~29) -> (30~39) -> (40~49) 순으로 출력
+                .fetch();
+
+        for (Tuple s : result) {
+            System.out.println("s = " + s);
+        }
+//        s = [MemberD, 55, 4]
+//        s = [MemberA, 25, 3]
+//        s = [MemberB, 35, 2]
+//        s = [MemberC, 45, 1]
+//        s = [MemberE, 49, 1]
+    }
+
 }
