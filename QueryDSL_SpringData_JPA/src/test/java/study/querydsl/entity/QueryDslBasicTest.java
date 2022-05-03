@@ -1,6 +1,7 @@
 package study.querydsl.entity;
 
 import com.querydsl.core.Tuple;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.assertj.core.api.Assertions;
@@ -427,5 +428,88 @@ public class QueryDslBasicTest {
         System.out.println("findTeamB = " + findTeamB);
 
 
+    }
+
+    /**
+     * 나이가 가장 많은 회원 조회
+     */
+    @Test
+    void subQuery() {
+        factory = new JPAQueryFactory(em);
+        QMember member = QMember.member;
+        QMember subMember = new QMember("sub"); // 서브쿼리 안에 있는 Member는 Alias 를 다르게 해줘야 하기 때문에 new QMember(name) 으로 Alias를 설정해서 생성
+
+        /**
+         * SELECT *FROM member WHERE age = (SELECT max(sub.age) FROM member sub);
+         */
+        List<Member> result = factory
+                .selectFrom(member)
+                .where(member.age.eq(
+                        JPAExpressions
+                                .select(subMember.age.max())
+                                .from(subMember)
+                ))
+                .fetch();
+        //eq 외 gt, goe 등등 모두 사용 가능
+
+        Assertions.assertThat(result).extracting("age")
+                .containsExactly(55);
+
+    }
+
+    /**
+     * 서브쿼리와 IN 절을 같이 사용하기
+     */
+    @Test
+    void subQueryIn() {
+        factory = new JPAQueryFactory(em);
+        QMember member = QMember.member;
+        QMember subMember = new QMember("sub"); // 서브쿼리 안에 있는 Member는 Alias 를 다르게 해줘야 하기 때문에 new QMember(name) 으로 Alias를 설정해서 생성
+
+        /**
+         * SELECT * FROM member WHERE age IN (SELECT sub.age FROM member sub WHERE sub.age > 40);
+         */
+        List<Member> result = factory
+                .selectFrom(member)
+                .where(member.age.in(
+                        JPAExpressions
+                                .select(subMember.age)
+                                .from(subMember)
+                                .where(subMember.age.gt(40))
+                ))
+                .fetch();
+
+        Assertions.assertThat(result).extracting("age")
+                .containsExactly(45, 55);
+
+    }
+
+    /**
+     * SELECT에서 서브쿼리를 사용하기
+     */
+    @Test
+    void subQuerySelect() {
+        factory = new JPAQueryFactory(em);
+        QMember member = QMember.member;
+        QMember subMember = new QMember("sub"); // 서브쿼리 안에 있는 Member는 Alias 를 다르게 해줘야 하기 때문에 new QMember(name) 으로 Alias를 설정해서 생성
+
+        /**
+         * SELECT username, avg(age) FROM MEMBER -> 쿼리문 실행 X -> 서브쿼리로 해결
+         * -> SELECT member.username, (SELECT avg(sub.age) FROM member sub) FROM member;
+         */
+        List<Tuple> result = factory.select(member.username,
+                        JPAExpressions
+                                .select(subMember.age.avg())
+                                .from(subMember))
+                .from(member)
+                .fetch();
+
+        for (Tuple tuple : result) {
+            System.out.println("tuple = " + tuple);
+        }
+
+
+//        Assertions.assertThat(result).extracting("age")
+//                .containsExactly(45, 55);
     }
 }
