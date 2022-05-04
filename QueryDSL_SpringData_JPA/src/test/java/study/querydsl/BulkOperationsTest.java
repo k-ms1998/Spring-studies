@@ -3,6 +3,7 @@ package study.querydsl;
 
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -104,5 +105,18 @@ public class BulkOperationsTest {
                         .fetch()
                         .size()
         ).isEqualTo(2);
+    }
+
+    @Test
+    void queryDslFunction() {
+        //select replace(username, 'Member', 'Mem') from member limit 1;
+        String result = factory
+                .select(Expressions.stringTemplate("function('replace', {0}, {1}, {2})", member.username, "Member", "Mem"))
+                .from(member)
+                .fetchFirst();
+
+        System.out.println("result = " + result);
+        Assertions.assertThat(result).isEqualTo("MemA");
+
     }
 }
