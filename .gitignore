@@ -8,3 +8,6 @@ QueryDSL_SpringData_JPA/src/main/java/study/querydsl/tmp/
 QueryDSL_SpringData_JPA/src/test/java/study/querydsl/QuerydslApplicationTests.java
 
 *.DS_Store
+
+##QueryDSL
+fc_notice_board/src/main/generated/*

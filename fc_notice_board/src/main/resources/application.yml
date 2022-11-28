@@ -18,4 +18,9 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
+  data:
+    rest:
+      base-path: /api
+      detection-strategy: annotated
+
 
