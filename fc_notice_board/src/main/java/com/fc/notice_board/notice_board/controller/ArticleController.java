@@ -19,4 +19,11 @@ public class ArticleController {
         return "articles/index";
     }
 
+    @GetMapping("/{articleId}")
+    public static String getArticle(@PathVariable Long articleId, ModelMap model) {
+        model.addAttribute("article", null);
+        model.addAttribute("articleComments", List.of());
+
+        return "articles/detail";
+    }
 }
