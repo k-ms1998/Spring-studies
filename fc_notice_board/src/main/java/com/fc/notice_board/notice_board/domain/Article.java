@@ -58,6 +58,11 @@ public class Article {
     @LastModifiedBy
     private String modifiedBy; // 수정자
 
+    @Setter
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "userId")
+    private UserAccount userAccount;
+
     private Article(String title, String content, String hashtag) {
         this.title = title;
         this.content = content;
