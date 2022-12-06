@@ -46,6 +46,11 @@ public class ArticleComment {
     @LastModifiedBy
     private String modifiedBy; // 수정자
 
+    @Setter
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "userId")
+    private UserAccount userAccount;
+
 
     private ArticleComment(Article article, String content) {
         this.article = article;
