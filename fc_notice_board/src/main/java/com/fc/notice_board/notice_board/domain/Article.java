@@ -1,5 +1,6 @@
 package com.fc.notice_board.notice_board.domain;
 
+import com.fc.notice_board.notice_board.dto.ArticleDto;
 import lombok.*;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
@@ -24,6 +25,7 @@ import java.util.Set;
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @EntityListeners(AuditingEntityListener.class)
+@AllArgsConstructor
 public class Article {
 
     @Id
@@ -69,8 +71,41 @@ public class Article {
         this.hashtag = hashtag;
     }
 
+    public Article(String title, String content, String hashtag, UserAccount userAccount) {
+        this.title = title;
+        this.content = content;
+        this.hashtag = hashtag;
+        this.userAccount = userAccount;
+    }
+
+    public Article(Long id, String title, String content, String hashtag, UserAccount userAccount) {
+        this.id = id;
+        this.title = title;
+        this.content = content;
+        this.hashtag = hashtag;
+        this.userAccount = userAccount;
+    }
+
     public static Article of(String title, String content, String hashtag) {
         return new Article(title, content, hashtag);
+    }
+
+    public static Article of(String title, String content, String hashtag, UserAccount userAccount) {
+        return new Article(title, content, hashtag, userAccount);
+    }
+
+    public static Article of(Long id, String title, String content, String hashtag, UserAccount userAccount) {
+        return new Article(id, title, content, hashtag, userAccount);
+    }
+
+    public void update(ArticleDto dto) {
+        if(dto.getTitle() != null){
+            this.title = dto.getTitle();
+        }
+        if(dto.getContent() != null){
+            this.content = dto.getContent();
+        }
+        this.hashtag = dto.getHashtag();
     }
 
     @Override
