@@ -78,6 +78,18 @@ public class Article {
         this.userAccount = userAccount;
     }
 
+    public Article(String title, String content, String hashtag, UserAccount userAccount,
+                   LocalDateTime createdAt, String createdBy, LocalDateTime modifiedAt, String modifiedBy) {
+        this.title = title;
+        this.content = content;
+        this.hashtag = hashtag;
+        this.userAccount = userAccount;
+        this.createdAt = createdAt;
+        this.createdBy = createdBy;
+        this.modifiedAt = modifiedAt;
+        this.modifiedBy = modifiedBy;
+    }
+
     public Article(Long id, String title, String content, String hashtag, UserAccount userAccount) {
         this.id = id;
         this.title = title;
@@ -96,6 +108,11 @@ public class Article {
 
     public static Article of(Long id, String title, String content, String hashtag, UserAccount userAccount) {
         return new Article(id, title, content, hashtag, userAccount);
+    }
+
+    public static Article of(String title, String content, String hashtag, UserAccount userAccount,
+                   LocalDateTime createdAt, String createdBy, LocalDateTime modifiedAt, String modifiedBy) {
+        return new Article(title, content, hashtag, userAccount, createdAt, createdBy, modifiedAt, modifiedBy);
     }
 
     public void update(ArticleDto dto) {
