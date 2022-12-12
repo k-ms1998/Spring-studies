@@ -7,6 +7,7 @@ import com.fc.notice_board.notice_board.dto.ArticleWithCommentsDto;
 import com.fc.notice_board.notice_board.dto.UserAccountDto;
 import com.fc.notice_board.notice_board.dto.enums.SearchType;
 import com.fc.notice_board.notice_board.service.ArticleService;
+import com.fc.notice_board.notice_board.service.PaginationService;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -22,6 +23,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
+import java.util.List;
 import java.util.Set;
 
 import static org.mockito.BDDMockito.*;
@@ -38,6 +40,9 @@ class ArticleControllerTest {
     @MockBean
     private ArticleService articleService;
 
+    @MockBean
+    private PaginationService paginationService;
+
     public ArticleControllerTest(@Autowired MockMvc mvc) {
         this.mvc = mvc;
     }
@@ -48,6 +53,7 @@ class ArticleControllerTest {
         // Given
         given(articleService.searchArticles(eq(null), eq(null), any(Pageable.class)))
                 .willReturn(Page.empty());
+        given(paginationService.getPaginationBarNumbers(anyInt(), anyInt())).willReturn(List.of(0, 1, 2, 3, 4));
 
         // When && Then
         mvc.perform(get("/articles"))
@@ -55,10 +61,11 @@ class ArticleControllerTest {
                 .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_HTML))
                 .andExpect(view().name("articles/index"))
                 .andExpect(model().attributeExists("articles"))
-                .andExpect(model().attributeExists("searchTypes"));
+                .andExpect(model().attributeExists("searchTypes"))
+                .andExpect(model().attributeExists("pagination"));
 
         then(articleService).should().searchArticles(eq(null), eq(null), any(Pageable.class));
-
+        then(paginationService).should().getPaginationBarNumbers(anyInt(), anyInt());
     }
 
     @DisplayName("[view][GET] - Get Specific Articles with Comments[Passed]")
