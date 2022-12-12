@@ -2,8 +2,11 @@ package com.fc.notice_board.notice_board.repository;
 
 import com.fc.notice_board.notice_board.domain.Article;
 import com.fc.notice_board.notice_board.domain.QArticle;
+import com.fc.notice_board.notice_board.dto.ArticleDto;
 import com.querydsl.core.types.dsl.DateTimeExpression;
 import com.querydsl.core.types.dsl.StringExpression;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.querydsl.binding.QuerydslBinderCustomizer;
@@ -17,9 +20,16 @@ public interface ArticleRepository
         QuerydslBinderCustomizer<QArticle>  //
 {
 
+    Page<ArticleDto> findByUserAccount_UserIdContaining(String userId, Pageable pageable);
+    Page<ArticleDto> findByTitleContaining(String title, Pageable pageable);
+    Page<ArticleDto> findByContentContaining(String content, Pageable pageable);
+    Page<ArticleDto> findByUserAccount_NicknameContaining(String nickname, Pageable pageable);
+    Page<ArticleDto> findByHashtag(String hashtag, Pageable pageable);
+
+
     /**
      * Article 의 모든 필드가 아닌, 원하는 필드들만 검색하기 위해 설정해주는 메서드
-     *
+     * <p>
      * ex: http://localhost:8080/api/articles?title=nullam => title 에 대소문자 구별하지 않고 'nullam' 값을 가진 데이터들을 가져옴
      */
     @Override
