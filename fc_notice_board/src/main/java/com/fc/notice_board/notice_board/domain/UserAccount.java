@@ -18,6 +18,7 @@ import java.util.List;
         @Index(columnList = "email", unique = true)
 })
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
 @Getter
 @EntityListeners(AuditingEntityListener.class)
 public class UserAccount {
@@ -57,4 +58,18 @@ public class UserAccount {
 
     @LastModifiedBy
     private String modifiedBy; // 수정자
+
+    public UserAccount(String userId, String userPassword, String email, String nickname, String memo, String createdBy, String modifiedBy) {
+        this.userId = userId;
+        this.userPassword = userPassword;
+        this.email = email;
+        this.nickname = nickname;
+        this.memo = memo;
+        this.createdBy = createdBy;
+        this.modifiedBy = modifiedBy;
+    }
+
+    public static UserAccount of(String userId, String userPassword, String email, String nickname, String memo, String createdBy, String modifiedBy) {
+        return new UserAccount(userId, userPassword, email, nickname, memo, createdBy, modifiedBy);
+    }
 }
