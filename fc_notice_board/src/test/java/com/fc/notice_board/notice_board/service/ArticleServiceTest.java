@@ -137,6 +137,23 @@ class ArticleServiceTest {
         then(articleRepository).should().delete(article);
     }
 
+    @DisplayName("[Article][Service] - When searching via hashtags - returns list of unique hashtags [Passed]")
+    @Test
+    void givenNothing_whenCalling_thenReturnsHashtags() throws Exception {
+        // Given
+        List<String> expectedHashtags = List.of("#java", "#spring", "#boot");
+        given(articleRepository.findAllDistinctHashtags()).willReturn(expectedHashtags);
+
+        // When
+        List<String> actualHashtags = sut.getHashtags();
+        System.out.println("actualHashtags = " + actualHashtags);
+
+        // Then
+        Assertions.assertThat(actualHashtags).isEqualTo(expectedHashtags);
+        then(articleRepository).should().findAllDistinctHashtags();
+
+    }
+
     public static Article createArticle() {
         return Article.of(1L, "title", "content", "#hashtag",
                 createUserAccount());

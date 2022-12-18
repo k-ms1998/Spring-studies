@@ -6,8 +6,10 @@ import com.fc.notice_board.notice_board.dto.ArticleDto;
 import com.fc.notice_board.notice_board.dto.ArticleWithCommentsDto;
 import com.fc.notice_board.notice_board.dto.UserAccountDto;
 import com.fc.notice_board.notice_board.dto.enums.SearchType;
+import com.fc.notice_board.notice_board.repository.ArticleRepository;
 import com.fc.notice_board.notice_board.service.ArticleService;
 import com.fc.notice_board.notice_board.service.PaginationService;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -43,6 +45,9 @@ class ArticleControllerTest {
     @MockBean
     private PaginationService paginationService;
 
+    @MockBean
+    private ArticleRepository articleRepository;
+
     public ArticleControllerTest(@Autowired MockMvc mvc) {
         this.mvc = mvc;
     }
@@ -62,7 +67,7 @@ class ArticleControllerTest {
                 .andExpect(view().name("articles/index"))
                 .andExpect(model().attributeExists("articles"))
                 .andExpect(model().attributeExists("searchTypes"))
-                .andExpect(model().attributeExists("pagination"));
+                .andExpect(model().attributeExists("paginationBarNumbers"));
 
         then(articleService).should().searchArticles(eq(null), eq(null), any(Pageable.class));
         then(paginationService).should().getPaginationBarNumbers(anyInt(), anyInt());
@@ -84,24 +89,6 @@ class ArticleControllerTest {
                 .andExpect(model().attributeExists("articleComments"));
 
         then(articleService).should().searchArticle(articleId);
-    }
-
-    @DisplayName("[view][GET] - Search Articles [Passed]")
-    @Test
-    void givenNoting_whenArticleSearchView_thenReturnsView() throws Exception {
-        // Given
-        SearchType searchType = SearchType.TITLE;
-        String searchValue = "title";
-        given(articleService.searchArticles(searchType, searchValue, Pageable.ofSize(10)))
-                .willReturn(Page.empty());
-
-        // When && Then
-        mvc.perform(get("/articles"))
-                .andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_HTML));
-
-        then(articleService).should().searchArticles(searchType, searchValue, any(Pageable.class));
-
     }
 
     @DisplayName("[view][GET] - Search Articles by Title [Passed]")
@@ -129,20 +116,38 @@ class ArticleControllerTest {
 
     }
 
-    @Disabled
-    @DisplayName("[view][GET] - Search Hashtag Articles [Passed]")
+    @DisplayName("[view][GET] - Given no search parameters when searching via hashtag - return empty page [Passed]")
     @Test
-    void givenNoting_whenSearchingHashtagArticleView_thenReturnsArticleView() throws Exception {
+    void givenNoSearchParameters_whenSearchingArticleViaHashtag_thenReturnsEmptyPage() throws Exception {
         // Given
+        given(articleService.searchArticlesViaHashtag(eq(null), any(Pageable.class))).willReturn(Page.empty());
 
-        // When
-
-        // Then
+        // When &Then
         mvc.perform(get("/articles/search-hashtag"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_HTML))
-                .andExpect(model().attributeExists("article/search-hashtag"));
+                .andExpect(view().name("articles/search-hashtag"))
+                .andExpect(model().attribute("searchType", SearchType.HASHTAG));
 
+        then(articleService).should().searchArticlesViaHashtag(eq(null), any(Pageable.class)); // 검색 키워드가 없으면 Service Layer 에서 오류를 처리하고 Repository 까지 갈 필요가 없으므로 articleRepository 까지 호출될 필요 없음
+    }
+
+    @DisplayName("[view][GET] - Given search parameters when searching via hashtag - return page [Passed]")
+    @Test
+    void givenHashtag_whenSearchingArticleViaHashtag_thenReturnsPage() throws Exception {
+        // Given
+        String hashtag = "#java";
+        given(articleService.searchArticlesViaHashtag(eq(hashtag), any(Pageable.class))).willReturn(Page.empty());
+
+        // When && Then
+        mvc.perform(get("/articles/search-hashtag")
+                        .queryParam("searchValue", hashtag))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_HTML))
+                .andExpect(view().name("articles/search-hashtag"))
+                .andExpect(model().attribute("searchType", SearchType.HASHTAG));
+
+        then(articleService).should().searchArticlesViaHashtag(eq(hashtag), any(Pageable.class));
     }
 
     private ArticleWithCommentsDto createArticleWithCommentsDto() {
