@@ -3,6 +3,7 @@ package com.fc.notice_board.notice_board.repository;
 import com.fc.notice_board.notice_board.domain.Article;
 import com.fc.notice_board.notice_board.domain.QArticle;
 import com.fc.notice_board.notice_board.dto.ArticleDto;
+import com.fc.notice_board.notice_board.repository.querydsl.ArticleRepositoryCustom;
 import com.querydsl.core.types.dsl.DateTimeExpression;
 import com.querydsl.core.types.dsl.StringExpression;
 import org.springframework.data.domain.Page;
@@ -13,18 +14,21 @@ import org.springframework.data.querydsl.binding.QuerydslBinderCustomizer;
 import org.springframework.data.querydsl.binding.QuerydslBindings;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 
+import java.util.List;
+
 @RepositoryRestResource
 public interface ArticleRepository
         extends JpaRepository<Article, Long>,
         QuerydslPredicateExecutor<Article>, // 해당 엔티티(Article)에 있는 모든 필드들에 대해서 검색 기능 추가
-        QuerydslBinderCustomizer<QArticle>  //
+        QuerydslBinderCustomizer<QArticle>, //
+        ArticleRepositoryCustom
 {
 
-    Page<ArticleDto> findByUserAccount_UserIdContaining(String userId, Pageable pageable);
-    Page<ArticleDto> findByTitleContaining(String title, Pageable pageable);
-    Page<ArticleDto> findByContentContaining(String content, Pageable pageable);
-    Page<ArticleDto> findByUserAccount_NicknameContaining(String nickname, Pageable pageable);
-    Page<ArticleDto> findByHashtag(String hashtag, Pageable pageable);
+    Page<Article> findByUserAccount_UserIdContaining(String userId, Pageable pageable);
+    Page<Article> findByTitleContaining(String title, Pageable pageable);
+    Page<Article> findByContentContaining(String content, Pageable pageable);
+    Page<Article> findByUserAccount_NicknameContaining(String nickname, Pageable pageable);
+    Page<Article> findByHashtag(String hashtag, Pageable pageable);
 
 
     /**
