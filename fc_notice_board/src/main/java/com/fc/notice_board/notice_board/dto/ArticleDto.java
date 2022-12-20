@@ -1,12 +1,14 @@
 package com.fc.notice_board.notice_board.dto;
 
 import com.fc.notice_board.notice_board.domain.Article;
+import com.fc.notice_board.notice_board.domain.UserAccount;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 @Getter
 @Setter
@@ -64,12 +66,12 @@ public class ArticleDto {
     /*
     ArticleDto -> Article
      */
-    public Article toEntity() {
+    public Article toEntity(UserAccount userAccount) {
         return Article.of(
                 this.getTitle(),
                 this.getContent(),
                 this.getHashtag(),
-                this.userAccountDto.toEntity(),
+                userAccount,
                 this.getCreatedAt(),
                 this.getCreatedBy(),
                 this.getModifiedAt(),
@@ -77,5 +79,16 @@ public class ArticleDto {
         );
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ArticleDto that = (ArticleDto) o;
+        return Objects.equals(getId(), that.getId());
+    }
 
+    @Override
+    public int hashCode() {
+        return Objects.hash(getId());
+    }
 }

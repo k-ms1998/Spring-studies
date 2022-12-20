@@ -24,9 +24,6 @@ import java.util.List;
 public class UserAccount {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
     @NotNull
     @Column(length = 50)
     private String userId;
