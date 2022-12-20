@@ -1,14 +1,19 @@
 package com.fc.notice_board.notice_board.controller;
 
 import com.fc.notice_board.notice_board.config.SpringSecurityConfig;
+import com.fc.notice_board.notice_board.domain.Article;
 import com.fc.notice_board.notice_board.domain.UserAccount;
 import com.fc.notice_board.notice_board.dto.ArticleDto;
 import com.fc.notice_board.notice_board.dto.ArticleWithCommentsDto;
 import com.fc.notice_board.notice_board.dto.UserAccountDto;
+import com.fc.notice_board.notice_board.dto.enums.FormStatus;
 import com.fc.notice_board.notice_board.dto.enums.SearchType;
+import com.fc.notice_board.notice_board.dto.request.ArticleRequest;
+import com.fc.notice_board.notice_board.dto.response.ArticleResponse;
 import com.fc.notice_board.notice_board.repository.ArticleRepository;
 import com.fc.notice_board.notice_board.service.ArticleService;
 import com.fc.notice_board.notice_board.service.PaginationService;
+import com.fc.notice_board.notice_board.util.FormDataEncoder;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
@@ -29,15 +34,17 @@ import java.util.List;
 import java.util.Set;
 
 import static org.mockito.BDDMockito.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @DisplayName("View Controller - Articles")
 @WebMvcTest(ArticleController.class)
-@Import(SpringSecurityConfig.class)
+@Import({SpringSecurityConfig.class, FormDataEncoder.class})
 class ArticleControllerTest {
 
     private final MockMvc mvc;
+    private final FormDataEncoder formDataEncoder;
 
     @MockBean
     private ArticleService articleService;
@@ -48,8 +55,9 @@ class ArticleControllerTest {
     @MockBean
     private ArticleRepository articleRepository;
 
-    public ArticleControllerTest(@Autowired MockMvc mvc) {
+    public ArticleControllerTest(@Autowired MockMvc mvc, @Autowired FormDataEncoder formDataEncoder) {
         this.mvc = mvc;
+        this.formDataEncoder = formDataEncoder;
     }
 
     @DisplayName("[view][GET] - Get All Articles [Passed]")
@@ -78,7 +86,7 @@ class ArticleControllerTest {
     void givenNoting_whenRequestingSpecificArticleView_thenReturnsSpecificArticleView() throws Exception {
         // Given
         Long articleId = 1L;
-        given(articleService.searchArticle(articleId)).willReturn(createArticleWithCommentsDto());
+        given(articleService.searchArticlesWithComments(articleId)).willReturn(createArticleWithCommentsDto());
 
         // When && Then
         mvc.perform(get("/articles/" + articleId))
@@ -88,7 +96,7 @@ class ArticleControllerTest {
                 .andExpect(model().attributeExists("article"))
                 .andExpect(model().attributeExists("articleComments"));
 
-        then(articleService).should().searchArticle(articleId);
+        then(articleService).should().searchArticlesWithComments(articleId);
     }
 
     @DisplayName("[view][GET] - Search Articles by Title [Passed]")
@@ -150,6 +158,92 @@ class ArticleControllerTest {
         then(articleService).should().searchArticlesViaHashtag(eq(hashtag), any(Pageable.class));
     }
 
+    @DisplayName("[view][GET] Render Create Article View")
+    @Test
+    void givenNothing_whenRequesting_thenReturnsNewArticlePage() throws Exception {
+        // Given
+
+        // When & Then
+        mvc.perform(get("/articles/form"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_HTML))
+                .andExpect(view().name("articles/form"))
+                .andExpect(model().attribute("formStatus", FormStatus.CREATE));
+    }
+
+    @DisplayName("[view][POST] Create Article - Success")
+    @Test
+    void givenNewArticleInfo_whenRequesting_thenSavesNewArticle() throws Exception {
+        // Given
+        ArticleRequest articleRequest = ArticleRequest.of("new title", "new content", "#new");
+        willDoNothing().given(articleService).saveArticle(any(ArticleDto.class));
+
+        // When & Then
+        mvc.perform(
+                        post("/articles/form")
+                                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                                .content(formDataEncoder.encode(articleRequest))
+                                .with(csrf())
+                )
+                .andExpect(status().is3xxRedirection())
+                .andExpect(view().name("redirect:/articles"))
+                .andExpect(redirectedUrl("/articles"));
+        then(articleService).should().saveArticle(any(ArticleDto.class));
+    }
+
+    @DisplayName("[view][GET] Render Article Update View")
+    @Test
+    void givenNothing_whenRequesting_thenReturnsUpdatedArticlePage() throws Exception {
+        // Given
+        long articleId = 1L;
+        ArticleDto dto = createArticleDto();
+        given(articleService.getArticle(articleId)).willReturn(dto);
+
+        // When & Then
+        mvc.perform(get("/articles/" + articleId + "/form"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_HTML))
+                .andExpect(view().name("articles/form"))
+                .andExpect(model().attributeExists("article"))
+                .andExpect(model().attribute("formStatus", FormStatus.UPDATE));
+        then(articleService).should().getArticle(articleId);
+    }
+
+    @DisplayName("[view][POST] Update Article - Success")
+    @Test
+    void givenUpdatedArticleInfo_whenRequesting_thenUpdatesArticle() throws Exception {
+        // Given
+        long articleId = 1L;
+        ArticleRequest articleRequest = ArticleRequest.of("new title", "new content", "#new");
+
+        // When & Then
+        mvc.perform(post("/articles/" + articleId + "/form")
+                        .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                        .content(formDataEncoder.encode(articleRequest))
+                        .with(csrf()))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(view().name("redirect:/articles/" + articleId))
+                .andExpect(redirectedUrl("/articles/" + articleId));
+    }
+
+    @DisplayName("[view][POST] Delete Article - Success")
+    @Test
+    void givenArticleIdToDelete_whenRequesting_thenDeletesArticle() throws Exception {
+        // Given
+        long articleId = 1L;
+        willDoNothing().given(articleService).deleteArticle(articleId);
+
+        // When & Then
+        mvc.perform(post("/articles/" + articleId + "/delete")
+                        .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                        .with(csrf()))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(view().name("redirect:/articles"))
+                .andExpect(redirectedUrl("/articles"));
+
+        then(articleService).should().deleteArticle(articleId);
+    }
+
     private ArticleWithCommentsDto createArticleWithCommentsDto() {
         UserAccountDto userAccountDto = createUserAccountDto();
 
@@ -170,5 +264,14 @@ class ArticleControllerTest {
                 "memo",
                 "Seop",
                 "Seop");
+    }
+
+    private ArticleDto createArticleDto() {
+        return ArticleDto.of(
+                "title",
+                "content",
+                "#java",
+                createUserAccountDto()
+        );
     }
 }
