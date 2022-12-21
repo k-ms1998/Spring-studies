@@ -1,11 +1,13 @@
 package com.fc.notice_board.notice_board.service;
 
 import com.fc.notice_board.notice_board.domain.Article;
+import com.fc.notice_board.notice_board.domain.UserAccount;
 import com.fc.notice_board.notice_board.dto.ArticleDto;
 import com.fc.notice_board.notice_board.dto.ArticleSearchParameters;
 import com.fc.notice_board.notice_board.dto.ArticleWithCommentsDto;
 import com.fc.notice_board.notice_board.dto.enums.SearchType;
 import com.fc.notice_board.notice_board.repository.ArticleRepository;
+import com.fc.notice_board.notice_board.repository.UserAccountRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -24,6 +26,7 @@ import java.util.Optional;
 public class ArticleService {
 
     private final ArticleRepository articleRepository;
+    private final UserAccountRepository userAccountRepository;
 
     public Page<ArticleDto> searchArticles(SearchType type, String searchKeyword, Pageable pageable) {
         if(searchKeyword == null || searchKeyword.isBlank()){
@@ -40,7 +43,7 @@ public class ArticleService {
         };
     }
 
-    public ArticleWithCommentsDto searchArticle(Long articleId) {
+    public ArticleWithCommentsDto searchArticlesWithComments(Long articleId) {
         return articleRepository.findById(articleId)
                 .map(ArticleWithCommentsDto::from)
                 .orElseThrow(() -> new EntityNotFoundException("Article Not Found."));
@@ -48,13 +51,15 @@ public class ArticleService {
 
     @Transactional
     public void saveArticle(ArticleDto dto) {
-        articleRepository.save(dto.toEntity());
+        UserAccount userAccount = userAccountRepository.getReferenceById(dto.getUserAccountDto().getUserId());
+        articleRepository.save(dto.toEntity(userAccount));
+
     }
 
     @Transactional
-    public Article updateArticle(ArticleDto dto) {
+    public Article updateArticle(Long articleId, ArticleDto dto) {
         try {
-            Article article = articleRepository.getReferenceById(dto.getId());
+            Article article = articleRepository.getReferenceById(articleId);
             article.update(dto);
             return articleRepository.save(article);
         } catch (EntityNotFoundException e) {
@@ -78,5 +83,16 @@ public class ArticleService {
 
     public List<String> getHashtags() {
         return articleRepository.findAllDistinctHashtags();
+    }
+
+    public ArticleDto getArticle(Long articleId) {
+
+        return articleRepository.findById(articleId)
+                .map(ArticleDto::from)
+                .orElseThrow(() -> new EntityNotFoundException("Invalid Article - articleId: " + articleId));
+    }
+
+    public long getArticleCount() {
+        return articleRepository.count();
     }
 }

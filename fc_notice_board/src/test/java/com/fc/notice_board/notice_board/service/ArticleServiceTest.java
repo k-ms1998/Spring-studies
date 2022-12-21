@@ -11,6 +11,7 @@ import com.fc.notice_board.notice_board.dto.ArticleWithCommentsDto;
 import com.fc.notice_board.notice_board.dto.UserAccountDto;
 import com.fc.notice_board.notice_board.dto.enums.SearchType;
 import com.fc.notice_board.notice_board.repository.ArticleRepository;
+import com.fc.notice_board.notice_board.repository.UserAccountRepository;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -22,6 +23,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.EntityNotFoundException;
+
+import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.*;
 
@@ -30,7 +34,7 @@ class ArticleServiceTest {
 
     @InjectMocks private ArticleService sut;
     @Mock private ArticleRepository articleRepository;
-
+    @Mock private UserAccountRepository userAccountRepository;
 
     /*
     검색 + 페이지네이션
@@ -82,7 +86,7 @@ class ArticleServiceTest {
         given(articleRepository.findById(articleId)).willReturn(Optional.of(article));
 
         // When
-        ArticleWithCommentsDto result = sut.searchArticle(articleId); // 제목, 본문, ID, 닉네임, 해시테그로 검색 가능
+        ArticleWithCommentsDto result = sut.searchArticlesWithComments(articleId); // 제목, 본문, ID, 닉네임, 해시테그로 검색 가능
 
         // Then
 //        Assertions.assertThat(result)
@@ -116,7 +120,7 @@ class ArticleServiceTest {
         given(articleRepository.getReferenceById(dto.getId())).willReturn(article);
 
         // When
-        Article result = sut.updateArticle(dto);
+        Article result = sut.updateArticle(article.getId(), dto);
 
         // Then
         then(articleRepository).should().getReferenceById(dto.getId());
@@ -128,13 +132,13 @@ class ArticleServiceTest {
         // Given
         Long articleId = 1L;
         Article article = createArticle();
-        willDoNothing().given(articleRepository).delete(article);
+        willDoNothing().given(articleRepository).deleteById(articleId);
 
         // When
         sut.deleteArticle(articleId);
 
         // Then
-        then(articleRepository).should().delete(article);
+        then(articleRepository).should().deleteById(articleId);
     }
 
     @DisplayName("[Article][Service] - When searching via hashtags - returns list of unique hashtags [Passed]")
@@ -153,6 +157,45 @@ class ArticleServiceTest {
         then(articleRepository).should().findAllDistinctHashtags();
 
     }
+
+    @DisplayName("[Article][Service] Given Article Id - Return Article With Comments")
+    @Test
+    void givenArticleId_whenSearchingArticleWithComments_thenReturnsArticleWithComments() {
+        // Given
+        Long articleId = 1L;
+        Article article = createArticle();
+        given(articleRepository.findById(articleId)).willReturn(Optional.of(article));
+
+        // When
+        ArticleWithCommentsDto dto = sut.searchArticlesWithComments(articleId);
+
+        // Then
+        Assertions.assertThat(dto.getArticleDto())
+                .hasFieldOrPropertyWithValue("title", article.getTitle())
+                .hasFieldOrPropertyWithValue("content", article.getContent())
+                .hasFieldOrPropertyWithValue("hashtag", article.getHashtag());
+
+        then(articleRepository).should().findById(articleId);
+    }
+
+    @DisplayName("[Article][Service] Given Invalid Article Id - Throws Exception")
+    @Test
+    void givenInvalidArticleId_whenSearchingArticleWithComments_thenThrowsException() {
+        // Given
+        Long articleId = 0L;
+        given(articleRepository.findById(articleId)).willReturn(Optional.empty());
+
+        // When
+        Throwable t = catchThrowable(() -> sut.searchArticlesWithComments(articleId));
+
+        // Then
+        Assertions.assertThat(t)
+                .isInstanceOf(EntityNotFoundException.class)
+                .hasMessage("Article Not Found.");
+
+        then(articleRepository).should().findById(articleId);
+    }
+
 
     public static Article createArticle() {
         return Article.of(1L, "title", "content", "#hashtag",
