@@ -61,6 +61,18 @@ public class ArticleComment {
         return new ArticleComment(article, content);
     }
 
+    public ArticleComment(Article article, String content, LocalDateTime createdAt, String createdBy, UserAccount userAccount) {
+        this.article = article;
+        this.content = content;
+        this.createdAt = createdAt;
+        this.createdBy = createdBy;
+        this.userAccount = userAccount;
+    }
+
+    public static ArticleComment of(Article article, String content, LocalDateTime createdAt, String createdBy, UserAccount userAccount) {
+        return new ArticleComment(article, content, createdAt, createdBy, userAccount);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
