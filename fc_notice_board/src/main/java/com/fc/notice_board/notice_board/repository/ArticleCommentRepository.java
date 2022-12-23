@@ -2,6 +2,7 @@ package com.fc.notice_board.notice_board.repository;
 
 import com.fc.notice_board.notice_board.domain.ArticleComment;
 import com.fc.notice_board.notice_board.domain.QArticleComment;
+import com.fc.notice_board.notice_board.dto.ArticleCommentDto;
 import com.querydsl.core.types.dsl.DateTimeExpression;
 import com.querydsl.core.types.dsl.StringExpression;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -10,12 +11,16 @@ import org.springframework.data.querydsl.binding.QuerydslBinderCustomizer;
 import org.springframework.data.querydsl.binding.QuerydslBindings;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 
+import java.util.List;
+
 @RepositoryRestResource
 public interface ArticleCommentRepository
         extends JpaRepository<ArticleComment, Long>,
         QuerydslPredicateExecutor<ArticleComment>,
         QuerydslBinderCustomizer<QArticleComment>
 {
+
+    List<ArticleComment> findByArticle_Id(Long articleId);
 
     /**
      * ArticleComment 의 모든 필드가 아닌, 원하는 필드들만 검색하기 위해 설정해주는 메서드
