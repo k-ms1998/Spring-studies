@@ -3,7 +3,6 @@ package com.fc.notice_board.notice_board.service;
 import com.fc.notice_board.notice_board.domain.Article;
 import com.fc.notice_board.notice_board.domain.UserAccount;
 import com.fc.notice_board.notice_board.dto.ArticleDto;
-import com.fc.notice_board.notice_board.dto.ArticleSearchParameters;
 import com.fc.notice_board.notice_board.dto.ArticleWithCommentsDto;
 import com.fc.notice_board.notice_board.dto.enums.SearchType;
 import com.fc.notice_board.notice_board.repository.ArticleRepository;
@@ -17,7 +16,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityNotFoundException;
 import java.util.List;
-import java.util.Optional;
 
 @Slf4j
 @Service

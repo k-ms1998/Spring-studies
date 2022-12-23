@@ -1,12 +1,10 @@
 package com.fc.notice_board.notice_board.service;
 
-import java.io.*;
 import java.util.*;
 
 import com.fc.notice_board.notice_board.domain.Article;
 import com.fc.notice_board.notice_board.domain.UserAccount;
 import com.fc.notice_board.notice_board.dto.ArticleDto;
-import com.fc.notice_board.notice_board.dto.ArticleSearchParameters;
 import com.fc.notice_board.notice_board.dto.ArticleWithCommentsDto;
 import com.fc.notice_board.notice_board.dto.UserAccountDto;
 import com.fc.notice_board.notice_board.dto.enums.SearchType;
