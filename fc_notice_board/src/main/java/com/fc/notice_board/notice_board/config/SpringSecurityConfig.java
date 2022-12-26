@@ -11,6 +11,8 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.factory.PasswordEncoderFactories;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
@@ -20,7 +22,8 @@ public class SpringSecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
                 .authorizeHttpRequests(auth ->
-                        auth.mvcMatchers(
+                        auth.requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll() //static resource(css, js 등)은 Spring Security 가 검사를 할 필요할 필요가 없기 때문에 아예 검색에서 제외; toCommonLocations 가 포함하는 위치들은 해당 메서드를 들어가서 확인하면 됨
+                                .mvcMatchers(
                                 HttpMethod.GET,
                                 "/",
                                 "/articles/",
@@ -29,18 +32,10 @@ public class SpringSecurityConfig {
                                 .anyRequest().authenticated()
                 )
                 .formLogin().and()
+                .logout()
+                    .logoutSuccessUrl("/") // logout  성공시 루트 페이지로 이동
+                    .and()
                 .build();
-    }
-    
-    @Bean
-    public WebSecurityCustomizer webSecurityCustomizer() {
-        /**
-         * ignoring(): 아예 Spring Security 의 검사 대상이 아님
-         * (vs. SecurityFilterChain 에서의 permitAll(): Spring Security 가 인증을 혀용해주는 것)
-         *  => static resource(css, js 등)은 Spring Security 가 검사를 할 필요할 필요가 없기 때문에 아예 검색에서 제외 
-         */
-        return (web) -> web.ignoring()
-                .requestMatchers(PathRequest.toStaticResources().atCommonLocations()); // toCommonLocations 가 포함하는 위치들은 해당 메서드를 들어가서 확인하면 됨
     }
 
     @Bean
@@ -50,5 +45,10 @@ public class SpringSecurityConfig {
                 .map(UserAccountDto::from)
                 .map(BoardPrincipal::from)
                 .orElseThrow(() -> new UsernameNotFoundException("Could Not Find Username."));
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return PasswordEncoderFactories.createDelegatingPasswordEncoder();
     }
 }
