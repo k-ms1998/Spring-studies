@@ -30,6 +30,7 @@ public interface ArticleRepository
     Page<Article> findByUserAccount_NicknameContaining(String nickname, Pageable pageable);
     Page<Article> findByHashtag(String hashtag, Pageable pageable);
 
+    void deleteByIdAndUserAccount_UserId(Long articleId, String userId);
 
     /**
      * Article 의 모든 필드가 아닌, 원하는 필드들만 검색하기 위해 설정해주는 메서드

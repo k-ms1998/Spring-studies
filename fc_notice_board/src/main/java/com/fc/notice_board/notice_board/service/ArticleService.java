@@ -58,7 +58,11 @@ public class ArticleService {
     public Article updateArticle(Long articleId, ArticleDto dto) {
         try {
             Article article = articleRepository.getReferenceById(articleId);
-            article.update(dto);
+            UserAccount userAccount = userAccountRepository.getReferenceById(dto.getUserAccountDto().getUserId());
+
+            if(article.getUserAccount().getUserId().equals(userAccount.getUserId())){
+                article.update(dto);
+            }
             return articleRepository.save(article);
         } catch (EntityNotFoundException e) {
             log.warn("게시글 업데이트 실패. 게시글을 찾을 수 없습니다. dto->{}", dto);
@@ -67,8 +71,8 @@ public class ArticleService {
     }
 
     @Transactional
-    public void deleteArticle(Long articleId) {
-        articleRepository.deleteById(articleId);
+    public void deleteArticle(Long articleId, String userId) {
+        articleRepository.deleteByIdAndUserAccount_UserId(articleId, userId);
     }
 
     public Page<ArticleDto> searchArticlesViaHashtag(String hashtag, Pageable pageable) {

@@ -21,6 +21,7 @@ public interface ArticleCommentRepository
 {
 
     List<ArticleComment> findByArticle_Id(Long articleId);
+    void deleteByIdAndUserAccount_UserId(Long articleCommentId, String userId);
 
     /**
      * ArticleComment 의 모든 필드가 아닌, 원하는 필드들만 검색하기 위해 설정해주는 메서드
