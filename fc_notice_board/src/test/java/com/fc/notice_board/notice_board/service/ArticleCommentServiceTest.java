@@ -16,6 +16,8 @@ import org.mockito.BDDMockito;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.test.context.support.TestExecutionEvent;
+import org.springframework.security.test.context.support.WithUserDetails;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -72,13 +74,14 @@ class ArticleCommentServiceTest {
     void givenArticleId_whenDeletingArticleComment_thenReturnsView() throws Exception {
         // Given
         Long articleCommentId = 1L;
-        willDoNothing().given(articleCommentRepository).deleteById(eq(articleCommentId));
+        String userId = "kmsTest";
+        willDoNothing().given(articleCommentRepository).deleteByIdAndUserAccount_UserId(eq(articleCommentId), eq(userId));
 
         // When
-        sut.deleteArticleComment(articleCommentId);
+        sut.deleteArticleComment(articleCommentId, userId);
 
         // Then
-        then(articleCommentRepository).should().deleteById(eq(articleCommentId));
+        then(articleCommentRepository).should().deleteByIdAndUserAccount_UserId(eq(articleCommentId), eq(userId));
     }
 
     private ArticleCommentDto createArticleCommentDto(String content) {

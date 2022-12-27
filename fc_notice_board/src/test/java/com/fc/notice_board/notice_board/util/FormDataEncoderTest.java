@@ -1,11 +1,13 @@
 package com.fc.notice_board.notice_board.util;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fc.notice_board.notice_board.config.TestSecurityConfig;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.security.test.context.support.WithMockUser;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -13,7 +15,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.*;
 
 @DisplayName("테스트 도구 - Form 데이터 인코더")
-@Import({FormDataEncoder.class, ObjectMapper.class})
+@Import({FormDataEncoder.class, ObjectMapper.class, TestSecurityConfig.class})
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE, classes = Void.class)
 class FormDataEncoderTest {
 
@@ -23,6 +25,7 @@ class FormDataEncoderTest {
         this.formDataEncoder = formDataEncoder;
     }
 
+    @WithMockUser
     @DisplayName("객체를 넣으면, url encoding 된 form body data 형식의 문자열을 돌려준다.")
     @Test
     void givenObject_whenEncoding_thenReturnsFormEncodedString() {

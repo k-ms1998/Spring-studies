@@ -1,6 +1,7 @@
 package com.fc.notice_board.notice_board.controller;
 
 import com.fc.notice_board.notice_board.config.SpringSecurityConfig;
+import com.fc.notice_board.notice_board.config.TestSecurityConfig;
 import com.fc.notice_board.notice_board.domain.Article;
 import com.fc.notice_board.notice_board.domain.UserAccount;
 import com.fc.notice_board.notice_board.dto.ArticleDto;
@@ -26,6 +27,9 @@ import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.TestExecutionEvent;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -40,7 +44,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @DisplayName("View Controller - Articles")
 @WebMvcTest(ArticleController.class)
-@Import({SpringSecurityConfig.class, FormDataEncoder.class})
+@Import({TestSecurityConfig.class, FormDataEncoder.class})
 class ArticleControllerTest {
 
     private final MockMvc mvc;
@@ -81,6 +85,7 @@ class ArticleControllerTest {
         then(paginationService).should().getPaginationBarNumbers(anyInt(), anyInt());
     }
 
+    @WithMockUser
     @DisplayName("[view][GET] - Get Specific Articles with Comments[Passed]")
     @Test
     void givenNoting_whenRequestingSpecificArticleView_thenReturnsSpecificArticleView() throws Exception {
@@ -158,6 +163,7 @@ class ArticleControllerTest {
         then(articleService).should().searchArticlesViaHashtag(eq(hashtag), any(Pageable.class));
     }
 
+    @WithMockUser // 스프링 시큐리티에서 인증이 완료된 상태로 테스트 진행
     @DisplayName("[view][GET] Render Create Article View")
     @Test
     void givenNothing_whenRequesting_thenReturnsNewArticlePage() throws Exception {
@@ -171,6 +177,10 @@ class ArticleControllerTest {
                 .andExpect(model().attribute("formStatus", FormStatus.CREATE));
     }
 
+    // 스프링 시큐리티에서 UserDetailsService 에서 실제 존재하는 유저가 있을때 인증 완료.
+    // 테스트에서는 TestSecurityConfig 를 통해 스프링 시큐리티를 인증하고, serAccountRepository.findById() 호출시 항상 userId 가 "kmsTest"인 유저를 반환하도록 설정
+    // 그러므로, value 를 "kmsTest" 로 두면 유저가 있다록 가정하고 인증이 된 상태로 테스트 진행됨
+    @WithUserDetails(value = "kmsTest", setupBefore = TestExecutionEvent.TEST_EXECUTION)
     @DisplayName("[view][POST] Create Article - Success")
     @Test
     void givenNewArticleInfo_whenRequesting_thenSavesNewArticle() throws Exception {
@@ -191,6 +201,7 @@ class ArticleControllerTest {
         then(articleService).should().saveArticle(any(ArticleDto.class));
     }
 
+    @WithMockUser
     @DisplayName("[view][GET] Render Article Update View")
     @Test
     void givenNothing_whenRequesting_thenReturnsUpdatedArticlePage() throws Exception {
@@ -209,6 +220,7 @@ class ArticleControllerTest {
         then(articleService).should().getArticle(articleId);
     }
 
+    @WithUserDetails(value = "ksmTest", setupBefore = TestExecutionEvent.TEST_EXECUTION)
     @DisplayName("[view][POST] Update Article - Success")
     @Test
     void givenUpdatedArticleInfo_whenRequesting_thenUpdatesArticle() throws Exception {
@@ -226,12 +238,17 @@ class ArticleControllerTest {
                 .andExpect(redirectedUrl("/articles/" + articleId));
     }
 
+    // 스프링 시큐리티에서 UserDetailsService 에서 실제 존재하는 유저가 있을때 인증 완료.
+    // 테스트에서는 TestSecurityConfig 를 통해 스프링 시큐리티를 인증하고, serAccountRepository.findById() 호출시 항상 userId 가 "kmsTest"인 유저를 반환하도록 설정
+    // 그러므로, value 를 "kmsTest" 로 두면 유저가 있다록 가정하고 인증이 된 상태로 테스트 진행됨
+    @WithUserDetails(value = "kmsTest", setupBefore = TestExecutionEvent.TEST_EXECUTION)
     @DisplayName("[view][POST] Delete Article - Success")
     @Test
     void givenArticleIdToDelete_whenRequesting_thenDeletesArticle() throws Exception {
         // Given
         long articleId = 1L;
-        willDoNothing().given(articleService).deleteArticle(articleId);
+        String userId = "kmsTest";
+        willDoNothing().given(articleService).deleteArticle(articleId, userId);
 
         // When & Then
         mvc.perform(post("/articles/" + articleId + "/delete")
@@ -241,7 +258,23 @@ class ArticleControllerTest {
                 .andExpect(view().name("redirect:/articles"))
                 .andExpect(redirectedUrl("/articles"));
 
-        then(articleService).should().deleteArticle(articleId);
+        then(articleService).should().deleteArticle(articleId, userId);
+    }
+
+    @DisplayName("[view][GET] Requesting Article Page w/o Logging In - Redirects to Login Page")
+    @Test
+    void givenNothing_whenRequesting_thenRedirectToLoginPage() throws Exception {
+        // Given
+        long articleId = 1L;
+
+        // When & Then
+        mvc.perform(get("/articles/" + articleId)
+                        .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                        .with(csrf()))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrlPattern("**/login"));
+
+        then(articleService).shouldHaveNoInteractions();
     }
 
     private ArticleWithCommentsDto createArticleWithCommentsDto() {
@@ -257,7 +290,7 @@ class ArticleControllerTest {
 
     private UserAccountDto createUserAccountDto() {
         return UserAccountDto.of(
-                "userId",
+                "kmsTest",
                 "userPassword",
                 "email",
                 "nickname",
