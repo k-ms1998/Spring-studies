@@ -116,12 +116,14 @@ class ArticleServiceTest {
         ArticleDto dto = createArticleDto();
 //        articleRepository.save(article);
         given(articleRepository.getReferenceById(dto.getId())).willReturn(article);
+        given(userAccountRepository.getReferenceById(dto.getUserAccountDto().getUserId())).willReturn(createUserAccount());
 
         // When
         Article result = sut.updateArticle(article.getId(), dto);
 
         // Then
         then(articleRepository).should().getReferenceById(dto.getId());
+        then(userAccountRepository).should().getReferenceById(dto.getUserAccountDto().getUserId());
     }
 
     @Test
@@ -130,13 +132,14 @@ class ArticleServiceTest {
         // Given
         Long articleId = 1L;
         Article article = createArticle();
-        willDoNothing().given(articleRepository).deleteById(articleId);
+        String userId = "kmsTest";
+        willDoNothing().given(articleRepository).deleteByIdAndUserAccount_UserId(articleId, userId);
 
         // When
-        sut.deleteArticle(articleId);
+        sut.deleteArticle(articleId, userId);
 
         // Then
-        then(articleRepository).should().deleteById(articleId);
+        then(articleRepository).should().deleteByIdAndUserAccount_UserId(articleId, userId);
     }
 
     @DisplayName("[Article][Service] - When searching via hashtags - returns list of unique hashtags [Passed]")

@@ -1,6 +1,7 @@
 package com.fc.notice_board.notice_board.controller;
 
 import com.fc.notice_board.notice_board.config.SpringSecurityConfig;
+import com.fc.notice_board.notice_board.config.TestSecurityConfig;
 import com.fc.notice_board.notice_board.dto.ArticleCommentDto;
 import com.fc.notice_board.notice_board.dto.UserAccountDto;
 import com.fc.notice_board.notice_board.dto.request.ArticleCommentRequest;
@@ -15,8 +16,12 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.security.test.context.support.TestExecutionEvent;
+import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.eq;
@@ -27,7 +32,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @DisplayName("View Controller - Article Comments")
 @WebMvcTest(ArticleCommentController.class)
-@Import({SpringSecurityConfig.class, FormDataEncoder.class})
+@Import({TestSecurityConfig.class, FormDataEncoder.class})
 class ArticleCommentControllerTest {
 
     private final MockMvc mvc;
@@ -41,6 +46,7 @@ class ArticleCommentControllerTest {
         this.formDataEncoder = formDataEncoder;
     }
 
+    @WithUserDetails(value = "kmsTest", setupBefore = TestExecutionEvent.TEST_EXECUTION)
     @DisplayName("[view][POST] Create Article Comment - Success")
     @Test
     void givenParameters_whenCreatingArticleComment_thenReturnsView() throws Exception {
@@ -61,6 +67,7 @@ class ArticleCommentControllerTest {
         then(articleCommentService).should().saveArticleComment(any(ArticleCommentDto.class));
     }
 
+    @WithUserDetails(value = "kmsTest", setupBefore = TestExecutionEvent.TEST_EXECUTION)
     @DisplayName("[view][POST] Delete Article Comment - Success")
     @Test
     void givenParameters_whenDeletingArticleComment_thenReturnsView() throws Exception {
@@ -68,15 +75,17 @@ class ArticleCommentControllerTest {
         Long articleId = 1L;
         Long articleCommentId = 1L;
         String content = "comment";
-        willDoNothing().given(articleCommentService).deleteArticleComment(articleCommentId);
+        String userId = "kmsTest";
+        willDoNothing().given(articleCommentService).deleteArticleComment(articleCommentId, userId);
 
         // When & Then
-        mvc.perform(post("/comments/" + articleId + "/" + articleCommentId + "/delete")
+        mvc.perform(post("/comments/" + articleCommentId + "/delete")
                         .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                        .content(formDataEncoder.encode(Map.of("articleId", articleId)))
                         .with(csrf()))
                 .andExpect(status().is3xxRedirection())
-                .andExpect(view().name("redirect:/articles/" + articleId));
+                .andExpect(redirectedUrl("/articles/" + articleId));
 
-        then(articleCommentService).should().deleteArticleComment(articleCommentId);
+        then(articleCommentService).should().deleteArticleComment(articleCommentId, userId);
     }
 }

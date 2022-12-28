@@ -1,9 +1,11 @@
 package com.fc.notice_board.notice_board.controller;
 
 import com.fc.notice_board.notice_board.config.SpringSecurityConfig;
+import com.fc.notice_board.notice_board.config.TestSecurityConfig;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
@@ -15,8 +17,8 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @DisplayName("Authentication Controller")
-@Import(SpringSecurityConfig.class)
-@WebMvcTest
+@Import(TestSecurityConfig.class)
+@WebMvcTest(SpringSecurityConfig.class)
 public class AuthControllerTest {
 
     private final MockMvc mvc;
