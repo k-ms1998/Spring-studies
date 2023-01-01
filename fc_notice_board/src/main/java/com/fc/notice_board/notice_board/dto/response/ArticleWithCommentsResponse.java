@@ -1,6 +1,8 @@
 package com.fc.notice_board.notice_board.dto.response;
 
+import com.fc.notice_board.notice_board.domain.Hashtag;
 import com.fc.notice_board.notice_board.dto.ArticleWithCommentsDto;
+import com.fc.notice_board.notice_board.dto.HashtagDto;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -23,7 +25,7 @@ public class ArticleWithCommentsResponse {
     private String nickname;
     private String userId;
     private LocalDateTime createdAt;
-    Set<String> hashtag;
+    Set<Hashtag> hashtag;
     Set<ArticleCommentResponse> articleCommentsResponse;
 
     public static ArticleWithCommentsResponse from(ArticleWithCommentsDto dto) {
@@ -40,10 +42,13 @@ public class ArticleWithCommentsResponse {
                 nickname,
                 dto.getUserAccountDto().getUserId(),
                 dto.getArticleDto().getCreatedAt(),
-                Set.of(dto.getArticleDto().getHashtag()),
+                dto.getArticleDto().getHashtagsDtos()
+                        .stream().map(HashtagDto::hashtagName)
+                        .collect(Collectors.toUnmodifiableSet()),
                 dto.getArticleCommentDtos().stream()
                         .map(ArticleCommentResponse::from)
                         .collect(Collectors.toSet())
         );
     }
+
 }
