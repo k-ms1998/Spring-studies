@@ -21,4 +21,13 @@ public class HashtagRepositoryCustomImpl extends QuerydslRepositorySupport imple
     public HashtagRepositoryCustomImpl() {
         super(Hashtag.class);
     }
+
+    @Override
+    public List<String> findAllHashtagNames() {
+        QHashtag hashtag = QHashtag.hashtag;
+
+        return from(hashtag)
+                .select(hashtag.hashtagName)
+                .fetch();
+    }
 }

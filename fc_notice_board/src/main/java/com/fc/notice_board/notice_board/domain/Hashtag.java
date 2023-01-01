@@ -61,9 +61,8 @@ public class Hashtag {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Hashtag hashtag = (Hashtag) o;
-        return this.getId().equals(hashtag.getId());
+        if (!(o instanceof Hashtag that)) return false;
+        return this.getId() != null && this.getId().equals(that.getId());
     }
 
     @Override

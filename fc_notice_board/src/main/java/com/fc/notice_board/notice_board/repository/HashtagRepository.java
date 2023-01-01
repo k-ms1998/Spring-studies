@@ -1,12 +1,9 @@
 package com.fc.notice_board.notice_board.repository;
 
 import com.fc.notice_board.notice_board.domain.Hashtag;
-import com.fc.notice_board.notice_board.domain.QHashtag;
-import com.fc.notice_board.notice_board.repository.querydsl.ArticleRepositoryCustom;
 import com.fc.notice_board.notice_board.repository.querydsl.HashtagRepositoryCustom;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
-import org.springframework.data.querydsl.binding.QuerydslBinderCustomizer;
 
 import java.util.List;
 import java.util.Optional;
