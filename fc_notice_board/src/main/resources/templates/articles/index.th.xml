@@ -48,7 +48,7 @@
                     <attr sel="td.title/a" th:text="${article.title}" th:href="@{'/articles/' + ${article.id}}" />
                     <attr sel="td.hashtag/span" th:each="hashtag : ${article.hashtags}">
                         <attr sel="a"
-                              th:text="'#' + ${hashtag}"
+                              th:text="'#' + ${hashtag.hashtagName}"
                               th:href="@{/articles(searchType=${searchTypeHashtag},searchValue=${hashtag})}"
                         />
                     </attr>
