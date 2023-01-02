@@ -3,6 +3,7 @@ package com.fc.notice_board.notice_board.repository;
 import com.fc.notice_board.notice_board.config.JpaConfig;
 import com.fc.notice_board.notice_board.domain.Article;
 import com.fc.notice_board.notice_board.domain.ArticleComment;
+import com.fc.notice_board.notice_board.domain.Hashtag;
 import com.fc.notice_board.notice_board.domain.UserAccount;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
@@ -18,6 +19,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -29,14 +31,17 @@ class JpaRepositoryTest {
     private final ArticleRepository articleRepository;
     private final ArticleCommentRepository articleCommentRepository;
     private final UserAccountRepository userAccountRepository;
+    private final HashtagRepository hashtagRepository;
 
     public JpaRepositoryTest(
             @Autowired ArticleRepository articleRepository,
             @Autowired ArticleCommentRepository articleCommentRepository,
-            @Autowired UserAccountRepository userAccountRepository) {
+            @Autowired UserAccountRepository userAccountRepository,
+            @Autowired HashtagRepository hashtagRepository) {
         this.articleRepository = articleRepository;
         this.articleCommentRepository = articleCommentRepository;
         this.userAccountRepository = userAccountRepository;
+        this.hashtagRepository = hashtagRepository;
     }
 
     @Test
@@ -60,7 +65,7 @@ class JpaRepositoryTest {
         UserAccount userAccount = userAccountRepository.save(new UserAccount("kms", "password", "email", "nickname", "memo", null, null));
 
         // When
-        articleRepository.save(Article.of("Testing Insert #1", "Testing Insert #1 Content", "#test", userAccount));
+        articleRepository.save(Article.of("Testing Insert #1", "Testing Insert #1 Content", userAccount));
         long currentArticleCount = articleRepository.count();
 
         // Then
@@ -74,18 +79,19 @@ class JpaRepositoryTest {
         // Given
         final String UPDATED_HASHTAG = "#SPRING";
         UserAccount userAccount = userAccountRepository.save(new UserAccount("kms", "password", "email", "nickname", "memo", null, null));
-        articleRepository.save(Article.of("Testing Update #1", "Testing Update #1 Content", "#update", userAccount));
+        articleRepository.save(Article.of("Testing Update #1", "Testing Update #1 Content", userAccount));
 
         // When
         Article article = articleRepository.findById(1L).get();
-        article.setHashtag(UPDATED_HASHTAG);
+        article.addHashtags(Hashtag.of(UPDATED_HASHTAG));
         articleRepository.save(article);
 
         Article finalArticle = articleRepository.findById(1L).get();
         articleRepository.flush(); // flush() 시켜야 update query 가 실행됨
         
         // Then
-        Assertions.assertThat(finalArticle).hasFieldOrPropertyWithValue("hashtag", UPDATED_HASHTAG);
+        Assertions.assertThat(finalArticle.getHashtags().stream().collect(Collectors.toList()).get(0))
+                .hasFieldOrPropertyWithValue("hashtagName", UPDATED_HASHTAG);
 
     }
 
@@ -94,7 +100,7 @@ class JpaRepositoryTest {
     void givenTestData_whenDeleting_thenSuccess() throws Exception {
         // Given
         UserAccount userAccount = userAccountRepository.save(new UserAccount("kms", "password", "email", "nickname", "memo", null, null));
-        Article article = Article.of("Testing Delete #1", "Testing Delete #1 Content", "#delete", userAccount);
+        Article article = Article.of("Testing Delete #1", "Testing Delete #1 Content", userAccount);
         articleRepository.save(article);
 
         Article savedArticle = articleRepository.findAll().get(0);

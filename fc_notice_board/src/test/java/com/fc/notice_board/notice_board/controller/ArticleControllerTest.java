@@ -6,6 +6,7 @@ import com.fc.notice_board.notice_board.domain.Article;
 import com.fc.notice_board.notice_board.domain.UserAccount;
 import com.fc.notice_board.notice_board.dto.ArticleDto;
 import com.fc.notice_board.notice_board.dto.ArticleWithCommentsDto;
+import com.fc.notice_board.notice_board.dto.HashtagDto;
 import com.fc.notice_board.notice_board.dto.UserAccountDto;
 import com.fc.notice_board.notice_board.dto.enums.FormStatus;
 import com.fc.notice_board.notice_board.dto.enums.SearchType;
@@ -185,7 +186,7 @@ class ArticleControllerTest {
     @Test
     void givenNewArticleInfo_whenRequesting_thenSavesNewArticle() throws Exception {
         // Given
-        ArticleRequest articleRequest = ArticleRequest.of("new title", "new content", "#new");
+        ArticleRequest articleRequest = ArticleRequest.of("new title", "new content");
         willDoNothing().given(articleService).saveArticle(any(ArticleDto.class));
 
         // When & Then
@@ -226,7 +227,7 @@ class ArticleControllerTest {
     void givenUpdatedArticleInfo_whenRequesting_thenUpdatesArticle() throws Exception {
         // Given
         long articleId = 1L;
-        ArticleRequest articleRequest = ArticleRequest.of("new title", "new content", "#new");
+        ArticleRequest articleRequest = ArticleRequest.of("new title", "new content");
 
         // When & Then
         mvc.perform(post("/articles/" + articleId + "/form")
@@ -283,7 +284,7 @@ class ArticleControllerTest {
         return new ArticleWithCommentsDto(
                 1L,
                 userAccountDto,
-                ArticleDto.of(1L, "title", "content", "#hashtag", userAccountDto),
+                ArticleDto.of(1L, "title", "content", Set.of(HashtagDto.of("java")), userAccountDto),
                 Set.of()
         );
     }
@@ -303,7 +304,7 @@ class ArticleControllerTest {
         return ArticleDto.of(
                 "title",
                 "content",
-                "#java",
+                Set.of(HashtagDto.of("java")),
                 createUserAccountDto()
         );
     }

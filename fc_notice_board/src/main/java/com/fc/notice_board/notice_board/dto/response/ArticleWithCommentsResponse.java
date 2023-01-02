@@ -25,7 +25,7 @@ public class ArticleWithCommentsResponse {
     private String nickname;
     private String userId;
     private LocalDateTime createdAt;
-    Set<Hashtag> hashtag;
+    Set<Hashtag> hashtags;
     Set<ArticleCommentResponse> articleCommentsResponse;
 
     public static ArticleWithCommentsResponse from(ArticleWithCommentsDto dto) {
