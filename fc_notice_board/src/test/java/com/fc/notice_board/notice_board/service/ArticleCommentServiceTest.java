@@ -107,7 +107,6 @@ class ArticleCommentServiceTest {
                 1L,
                 "title",
                 "content",
-                "hashtag",
                 createUserAccount()
         );
     }
