@@ -27,7 +27,7 @@ public class ArticleWithCommentsDto {
         this.articleCommentDtos = articleCommentDtos;
     }
 
-    public ArticleWithCommentsDto of(UserAccountDto userAccountDto, ArticleDto articleDto, Set<ArticleCommentDto> articleCommentDtos) {
+    public static ArticleWithCommentsDto of(UserAccountDto userAccountDto, ArticleDto articleDto, Set<ArticleCommentDto> articleCommentDtos) {
         return new ArticleWithCommentsDto(userAccountDto, articleDto, articleCommentDtos);
     }
 

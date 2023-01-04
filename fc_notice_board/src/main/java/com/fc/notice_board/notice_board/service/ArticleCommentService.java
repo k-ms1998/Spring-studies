@@ -51,9 +51,15 @@ public class ArticleCommentService {
         try {
             Article article = articleRepository.getReferenceById(articleId);
             UserAccount userAccount = userAccountRepository.getReferenceById(userId);
+            ArticleComment articleComment = articleCommentDto.toEntity(article, userAccount);
 
-            articleCommentRepository.save(
-                    ArticleComment.of(article, content, LocalDateTime.now(), "kms", userAccount));
+            if (articleCommentDto.getParentCommentId() != null) {
+                ArticleComment parentComment = articleCommentRepository.getReferenceById(articleCommentDto.getParentCommentId());
+                parentComment.addChildComment(articleComment);
+            }else{
+                articleCommentRepository.save(articleComment);
+            }
+
         } catch (EntityNotFoundException e) {
             throw new EntityNotFoundException("Entity Not Found.");
         }
