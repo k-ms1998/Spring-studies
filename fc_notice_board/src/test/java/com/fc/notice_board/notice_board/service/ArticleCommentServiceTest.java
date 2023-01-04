@@ -40,14 +40,16 @@ class ArticleCommentServiceTest {
     void givenArticleId_whenSearchingArticleComments_thenReturnsArticleComments() throws Exception {
         // Given
         Long articleId = 1L;
-        ArticleComment expected = createArticleComment("content");
-        given(articleCommentRepository.findByArticle_Id(articleId)).willReturn(List.of(expected));
+        ArticleComment expectedParentComment = createArticleComment(1L, "parent content");
+        ArticleComment expectedChildComment = createArticleComment(2L, "child content");
+        expectedChildComment.setParentCommentId(expectedParentComment.getId());
+        given(articleCommentRepository.findByArticle_Id(articleId)).willReturn(List.of(expectedParentComment, expectedChildComment));
 
         // When
         List<ArticleCommentDto> result = sut.searchArticleComment(articleId);
 
         // Then
-        Assertions.assertThat(result).hasSize(1);
+        Assertions.assertThat(result).hasSize(2);
         then(articleCommentRepository).should().findByArticle_Id(articleId);
     }
 
@@ -55,10 +57,9 @@ class ArticleCommentServiceTest {
     @DisplayName("[ArticleComment][Service] Creating Article Comments")
     void givenArticleId_whenCreatingArticleComment_thenReturnsArticleComment() throws Exception {
         // Given
-        ArticleCommentDto comment = createArticleCommentDto("comment");
+        ArticleCommentDto comment = createArticleCommentDto(null, "comment");
         given(articleRepository.getReferenceById(comment.getArticleId())).willReturn(createArticle());
         given(userAccountRepository.getReferenceById(comment.getUserAccountDto().getUserId())).willReturn(createUserAccount());
-        given(articleCommentRepository.save(any(ArticleComment.class))).willReturn(null);
 
         // When
         sut.saveArticleComment(comment);
@@ -66,7 +67,6 @@ class ArticleCommentServiceTest {
         // Then
         then(articleRepository).should().getReferenceById(comment.getArticleId());
         then(userAccountRepository).should().getReferenceById(comment.getUserAccountDto().getUserId());
-        then(articleCommentRepository).should().save(any(ArticleComment.class));
     }
 
     @Test
@@ -84,21 +84,44 @@ class ArticleCommentServiceTest {
         then(articleCommentRepository).should().deleteByIdAndUserAccount_UserId(eq(articleCommentId), eq(userId));
     }
 
-    private ArticleCommentDto createArticleCommentDto(String content) {
+    @Test
+    @DisplayName("[ArticleComment][Service] Create Child Comment")
+    void givenParentCommentIdAndArticleCommentInfo_whenCreating_thenSavesChildComment() throws Exception {
+        // Given
+        Long parentCommentId = 1L;
+        ArticleComment parentComment = createArticleComment(parentCommentId, "Parent Comment");
+        ArticleCommentDto childComment = createArticleCommentDto(parentCommentId, "Child Comment");
+        given(articleRepository.getReferenceById(childComment.getArticleId())).willReturn(createArticle());
+        given(userAccountRepository.getReferenceById(childComment.getUserAccountDto().getUserId())).willReturn(createUserAccount());
+        given(articleCommentRepository.getReferenceById(childComment.getParentCommentId())).willReturn(parentComment);
+
+        // When
+        sut.saveArticleComment(childComment);
+
+        // Then
+        Assertions.assertThat(childComment.getParentCommentId()).isNotNull();
+        then(articleRepository).should().getReferenceById(childComment.getArticleId());
+        then(userAccountRepository).should().getReferenceById(childComment.getUserAccountDto().getUserId());
+        then(articleCommentRepository).should().getReferenceById(childComment.getParentCommentId());
+    }
+
+    private ArticleCommentDto createArticleCommentDto(Long parentCommentId, String content) {
         return ArticleCommentDto.of(
                 1L,
+                parentCommentId,
                 UserAccountDto.from(createUserAccount()),
                 content
         );
     }
 
-    private ArticleComment createArticleComment(String content) {
+    private ArticleComment createArticleComment(Long parentCommentId, String content) {
         return ArticleComment.of(
                 createArticle(),
                 content,
                 LocalDateTime.now(),
                 "kms",
-                createUserAccount()
+                createUserAccount(),
+                parentCommentId
         );
     }
 
