@@ -9,7 +9,10 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.Objects;
+import java.util.Set;
 
 @Getter
 @Table(indexes = {
@@ -51,6 +54,14 @@ public class ArticleComment {
     @JoinColumn(name = "userId")
     private UserAccount userAccount;
 
+    @Setter
+    @Column(nullable = true, updatable = false)
+    private Long parentCommentId;
+
+    @ToString.Exclude
+    @OrderBy("createdAt ASC")
+    @OneToMany(mappedBy = "parentCommentId", cascade = CascadeType.ALL) // 부모 댓글이 삭제되면 자식 댓글들도 모두 삭제
+    private Set<ArticleComment> childComments = new LinkedHashSet<>(); // 순서가 중요하기 때문에 LinkedHashSet
 
     private ArticleComment(Article article, String content) {
         this.article = article;
@@ -61,16 +72,26 @@ public class ArticleComment {
         return new ArticleComment(article, content);
     }
 
-    public ArticleComment(Article article, String content, LocalDateTime createdAt, String createdBy, UserAccount userAccount) {
+    public ArticleComment(Article article, String content, LocalDateTime createdAt, String createdBy, UserAccount userAccount, Long parentCommentId) {
         this.article = article;
         this.content = content;
         this.createdAt = createdAt;
         this.createdBy = createdBy;
         this.userAccount = userAccount;
+        this.parentCommentId = parentCommentId;
     }
 
     public static ArticleComment of(Article article, String content, LocalDateTime createdAt, String createdBy, UserAccount userAccount) {
-        return new ArticleComment(article, content, createdAt, createdBy, userAccount);
+        return new ArticleComment(article, content, createdAt, createdBy, userAccount, null);
+    }
+
+    public static ArticleComment of(Article article, String content, LocalDateTime createdAt, String createdBy, UserAccount userAccount, Long parentCommentId) {
+        return new ArticleComment(article, content, createdAt, createdBy, userAccount, parentCommentId);
+    }
+
+    public void addChildComment(ArticleComment childComment) {
+        childComment.setParentCommentId(this.getId());
+        this.getChildComments().add(childComment);
     }
 
     @Override

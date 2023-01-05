@@ -6,6 +6,7 @@ import com.fc.notice_board.notice_board.domain.ArticleComment;
 import com.fc.notice_board.notice_board.domain.Hashtag;
 import com.fc.notice_board.notice_board.domain.UserAccount;
 import org.assertj.core.api.Assertions;
+import org.assertj.core.api.InstanceOfAssertFactories;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +17,9 @@ import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Profile;
 import org.springframework.data.domain.AuditorAware;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -75,6 +78,7 @@ class JpaRepositoryTest {
 
     @Test
     @DisplayName("UPDATE")
+    @Transactional
     void givenTestData_whenUpdating_thenSuccess() throws Exception {
         // Given
         final String UPDATED_HASHTAG = "#SPRING";
@@ -82,11 +86,11 @@ class JpaRepositoryTest {
         articleRepository.save(Article.of("Testing Update #1", "Testing Update #1 Content", userAccount));
 
         // When
-        Article article = articleRepository.findById(1L).get();
+        Article article = articleRepository.getReferenceById(1L);
         article.addHashtags(Hashtag.of(UPDATED_HASHTAG));
         articleRepository.save(article);
 
-        Article finalArticle = articleRepository.findById(1L).get();
+        Article finalArticle = articleRepository.getReferenceById(1L);;
         articleRepository.flush(); // flush() 시켜야 update query 가 실행됨
         
         // Then
@@ -114,6 +118,26 @@ class JpaRepositoryTest {
         // Then
         Assertions.assertThat(articleRepository.count()).isEqualTo(previousArticleCount - 1);
         Assertions.assertThat(articleCommentRepository.count()).isEqualTo(previousArticleCommentCount - deletedCommentsSize);
+
+    }
+
+    @DisplayName("[ArticleComment] - SELECT")
+    @Test
+    void givenParentCommentId_whenSelecting_thenReturnsChildComments() throws Exception {
+        // Given
+        Long parentCommentId = 1L;
+        UserAccount userAccount = userAccountRepository.save(UserAccount.of("kms", "password", "email", "nickname", "memo", "kms", "kms"));
+        Article article = articleRepository.save(Article.of("title", "content", userAccount));
+        articleCommentRepository.save(ArticleComment.of(article, "parent comment", LocalDateTime.now(), "kms", userAccount));
+
+        // When
+        Optional<ArticleComment> parentArticleComment = articleCommentRepository.findById(parentCommentId);
+
+        Assertions.assertThat(parentArticleComment).get()
+                .hasFieldOrPropertyWithValue("parentCommentId", null)
+                .extracting("childComments", InstanceOfAssertFactories.COLLECTION)
+                    .hasSize(0);
+        // Then
 
     }
 

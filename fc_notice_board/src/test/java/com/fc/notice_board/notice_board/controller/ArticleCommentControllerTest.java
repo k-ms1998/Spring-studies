@@ -88,4 +88,47 @@ class ArticleCommentControllerTest {
 
         then(articleCommentService).should().deleteArticleComment(articleCommentId, userId);
     }
+
+    @WithUserDetails(value = "kmsTest", setupBefore = TestExecutionEvent.TEST_EXECUTION)
+    @DisplayName("[view][POST] Create Child Comment - Success")
+    @Test
+    void givenParameters_whenCreatingChildComment_thenReturnsView() throws Exception {
+        // Given
+        Long articleId = 1L;
+        Long parentCommentId = 1L;
+        ArticleCommentRequest articleCommentRequest = ArticleCommentRequest.of(articleId, parentCommentId, "content");
+        String userId = "kmsTest";
+        willDoNothing().given(articleCommentService).saveArticleComment(any(ArticleCommentDto.class));
+
+        // When & Then
+        mvc.perform(post("/comments/create")
+                        .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                        .content(formDataEncoder.encode(articleCommentRequest))
+                        .with(csrf()))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/articles/" + articleId));
+
+        then(articleCommentService).should().saveArticleComment(any(ArticleCommentDto.class));
+    }
+
+    @WithUserDetails(value = "kmsTest", setupBefore = TestExecutionEvent.TEST_EXECUTION)
+    @DisplayName("[view][POST] Delete Child Comment - Success")
+    @Test
+    void givenParameters_whenDeletingChildComment_thenReturnsView() throws Exception {
+        // Given
+        Long articleId = 1L;
+        Long articleCommentId = 1L;
+        String userId = "kmsTest";
+        willDoNothing().given(articleCommentService).deleteArticleComment(articleCommentId, userId);
+
+        // When & Then
+        mvc.perform(post("/comments/" + articleCommentId + "/delete")
+                        .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                        .content(formDataEncoder.encode(Map.of("articleId", articleId)))
+                        .with(csrf()))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/articles/" + articleId));
+
+        then(articleCommentService).should().deleteArticleComment(articleCommentId, userId);
+    }
 }
