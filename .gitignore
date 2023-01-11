@@ -11,3 +11,5 @@ QueryDSL_SpringData_JPA/src/test/java/study/querydsl/QuerydslApplicationTests.ja
 
 ##QueryDSL
 fc_notice_board/src/main/generated/*
+
+fc_notice_board/documents/env-variables.txt
