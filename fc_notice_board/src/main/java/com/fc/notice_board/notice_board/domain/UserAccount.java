@@ -10,8 +10,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Objects;
 
 @Entity
 @Table(indexes = {
@@ -66,7 +65,24 @@ public class UserAccount {
         this.modifiedBy = modifiedBy;
     }
 
+    public static UserAccount of(String userId, String userPassword, String email, String nickname, String memo, String createdBy) {
+        return new UserAccount(userId, userPassword, email, nickname, memo, createdBy, createdBy);
+    }
+
     public static UserAccount of(String userId, String userPassword, String email, String nickname, String memo, String createdBy, String modifiedBy) {
         return new UserAccount(userId, userPassword, email, nickname, memo, createdBy, modifiedBy);
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof UserAccount that)) return false;
+        return this.getUserId() != null && this.getUserId().equals(that.getUserId());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.getUserId());
+    }
+
 }
