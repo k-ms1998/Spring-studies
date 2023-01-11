@@ -7,14 +7,16 @@ import lombok.NoArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 
 import java.util.Collection;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 @NoArgsConstructor
 @AllArgsConstructor
-public class BoardPrincipal implements UserDetails {
+public class BoardPrincipal implements UserDetails, OAuth2User {
 
     private String username;
     private String password;
@@ -22,8 +24,9 @@ public class BoardPrincipal implements UserDetails {
     private String nickname;
     private String memo;
     private Collection<? extends GrantedAuthority> authorities;
+    private Map<String, Object> oAuth2Attributes;
 
-    public static BoardPrincipal of(String username, String password, String email, String nickname, String memo) {
+    public static BoardPrincipal of(String username, String password, String email, String nickname, String memo, Map<String, Object> oAuth2Attributes) {
         Set<RoleType> roleTypes = Set.of(RoleType.USER);
 
         return new BoardPrincipal(
@@ -31,8 +34,13 @@ public class BoardPrincipal implements UserDetails {
                 roleTypes.stream()
                         .map(RoleType::getName)
                         .map(SimpleGrantedAuthority::new)
-                        .collect(Collectors.toUnmodifiableSet())
+                        .collect(Collectors.toUnmodifiableSet()),
+                oAuth2Attributes
         );
+    }
+
+    public static BoardPrincipal of(String username, String password, String email, String nickname, String memo) {
+        return BoardPrincipal.of(username, password, email, nickname, memo, Map.of());
     }
 
     public static BoardPrincipal from(UserAccountDto dto) {
@@ -89,6 +97,12 @@ public class BoardPrincipal implements UserDetails {
     public boolean isEnabled() {
         return true;
     }
+
+    @Override
+    public Map<String, Object> getAttributes() { return this.oAuth2Attributes; }
+
+    @Override
+    public String getName() { return this.username; }
 
     public enum RoleType{
         USER("ROLE_USER");
