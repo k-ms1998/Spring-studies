@@ -6,4 +6,5 @@
     - 댓글 작성, 삭제, 정렬
     - 대댓글 작성, 삭제, 정렬
     - 회원 인증(Spring Security), OAuth2.0(카카오 로그인 인증)
+    - Hashicorp Vault
 
