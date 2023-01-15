@@ -8,6 +8,14 @@ logging:
     org.hibernate.type.descriptor.sql.BasicBinder: trace
 
 spring:
+  application.name: notice-board
+  cloud:
+    vault:
+      scheme: http
+      authentication: TOKEN
+      token: ${VAULT_TOKEN}
+  config:
+    import: vault://
   jpa:
     open-in-view: false
     defer-datasource-initialization: true
