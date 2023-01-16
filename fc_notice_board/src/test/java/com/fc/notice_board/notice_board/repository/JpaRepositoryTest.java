@@ -83,14 +83,13 @@ class JpaRepositoryTest {
         // Given
         final String UPDATED_HASHTAG = "#SPRING";
         UserAccount userAccount = userAccountRepository.save(new UserAccount("kms", "password", "email", "nickname", "memo", null, null));
-        articleRepository.save(Article.of("Testing Update #1", "Testing Update #1 Content", userAccount));
+        Article savedArticle = articleRepository.save(Article.of("Testing Update #1", "Testing Update #1 Content", userAccount));
 
         // When
-        Article article = articleRepository.getReferenceById(1L);
-        article.addHashtags(Hashtag.of(UPDATED_HASHTAG));
-        articleRepository.save(article);
+        savedArticle.addHashtags(Hashtag.of(UPDATED_HASHTAG));
+        articleRepository.save(savedArticle);
 
-        Article finalArticle = articleRepository.getReferenceById(1L);;
+        Article finalArticle = articleRepository.getReferenceById(savedArticle.getId());
         articleRepository.flush(); // flush() 시켜야 update query 가 실행됨
         
         // Then
